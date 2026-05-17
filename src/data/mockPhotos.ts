@@ -3,13 +3,54 @@ import type { CleanupReason, MemoryAlbum, MemoryPhoto } from "@/types/photo";
 const image = (seed: string, width = 900, height = 700) => `https://picsum.photos/seed/${seed}/${width}/${height}`;
 
 export const cleanupReasonLabels: Record<CleanupReason, string> = {
-  blurry_candidate: "May be blurry",
-  duplicate_candidate: "Possible duplicate",
-  screenshot_candidate: "May be a screenshot",
-  document_candidate: "May be a document",
-  unknown_date: "Needs a date",
-  unknown_place: "Needs a place",
-  unknown_person: "Needs people"
+  blurry_candidate: "흐릿할 수 있어요",
+  duplicate_candidate: "비슷한 사진이 있어요",
+  screenshot_candidate: "화면 캡처 같아요",
+  document_candidate: "문서 사진 같아요",
+  unknown_date: "날짜를 확인해 주세요",
+  unknown_place: "장소를 확인해 주세요",
+  unknown_person: "사람을 확인해 주세요"
+};
+
+const personDisplayNames: Record<string, string> = {
+  Mom: "엄마",
+  Dad: "아빠",
+  Grandma: "할머니",
+  Jisoo: "지수",
+  Min: "민",
+  "People unknown": "사람 확인 필요"
+};
+
+const placeDisplayNames: Record<string, string> = {
+  "Place unknown": "장소 확인 필요",
+  "Han River Park": "한강공원",
+  "Grandma's house": "할머니 댁",
+  "Gangneung beach": "강릉 바닷가",
+  "Old family home": "예전 우리집",
+  "Incheon Airport": "인천공항",
+  "Gapyeong campground": "가평 캠핑장",
+  "Apartment courtyard": "아파트 마당",
+  "Family apartment": "우리집",
+  "Seoul banquet hall": "서울 가족모임 장소"
+};
+
+const eventDisplayNames: Record<string, string> = {
+  "Spring picnic": "봄 소풍",
+  "Grandma birthday": "할머니 생신",
+  "Summer trip": "여름 여행",
+  "Old home memories": "예전 우리집 추억",
+  "Europe trip": "유럽 여행",
+  "Lunar new year": "설날 모임",
+  "Graduation day": "졸업식",
+  "Camping weekend": "캠핑 주말",
+  "Chuseok gathering": "추석 모임",
+  "Spring walk": "봄 산책",
+  "Everyday memories": "일상의 추억",
+  "New home": "새집 첫날",
+  "Video call birthday": "영상통화 생일",
+  "Jeju trip": "제주 여행",
+  "Weekend hike": "주말 산행",
+  "Family reunion": "가족 모임"
 };
 
 export const mockPhotos: MemoryPhoto[] = [
@@ -699,36 +740,36 @@ export const mockPhotos: MemoryPhoto[] = [
 export const memoryAlbums: MemoryAlbum[] = [
   {
     id: "a-1990s",
-    title: "Old home memories",
-    subtitle: "1990s family scans",
+    title: "예전 우리집 추억",
+    subtitle: "1990년대 스캔 사진",
     coverPhotoId: "p-004",
     photoCount: 42
   },
   {
     id: "a-summer",
-    title: "Summer trips",
-    subtitle: "Beaches, meals, and long drives",
+    title: "여름 여행",
+    subtitle: "바닷가, 식사, 긴 드라이브",
     coverPhotoId: "p-003",
     photoCount: 86
   },
   {
     id: "a-europe",
-    title: "Europe trip",
-    subtitle: "First overseas family trip",
+    title: "유럽 여행",
+    subtitle: "첫 해외 가족여행",
     coverPhotoId: "p-005",
     photoCount: 118
   },
   {
     id: "a-gatherings",
-    title: "Family gatherings",
-    subtitle: "Birthdays, holidays, and reunions",
+    title: "가족 모임",
+    subtitle: "생일, 명절, 오랜만의 모임",
     coverPhotoId: "p-030",
     photoCount: 71
   },
   {
     id: "a-everyday",
-    title: "Everyday family",
-    subtitle: "Small moments around home",
+    title: "일상의 가족사진",
+    subtitle: "집 주변의 작고 편한 순간들",
     coverPhotoId: "p-024",
     photoCount: 54
   }
@@ -742,12 +783,44 @@ export function getAlbumCover(album: MemoryAlbum) {
   return mockPhotos.find((photo) => photo.id === album.coverPhotoId) ?? mockPhotos[0];
 }
 
+export function getAlbumPhotos(album: MemoryAlbum) {
+  const cover = getAlbumCover(album);
+  const matchedByEvent = getActivePhotos().filter((photo) => photo.eventName === cover.eventName);
+
+  if (matchedByEvent.length > 0) {
+    return matchedByEvent;
+  }
+
+  return getActivePhotos().filter((photo) => photo.year === cover.year);
+}
+
 export function getActivePhotos() {
   return mockPhotos.filter((photo) => photo.visibilityState === "active");
 }
 
 export function getDisplayDate(photo: MemoryPhoto) {
-  return photo.approximateDateLabel ?? photo.takenAt ?? "Date unknown";
+  if (photo.approximateDateLabel === "Date unknown") {
+    return "날짜 확인 필요";
+  }
+
+  return photo.approximateDateLabel ?? photo.takenAt ?? "날짜 확인 필요";
+}
+
+export function getPhotoCountLabel(count: number) {
+  return `${count}장`;
+}
+
+export function getPlaceDisplayName(placeName: string) {
+  return placeDisplayNames[placeName] ?? placeName;
+}
+
+export function getPersonDisplayName(personName: string) {
+  return personDisplayNames[personName] ?? personName;
+}
+
+export function getEventDisplayName(eventName?: string) {
+  if (!eventName) return "아직 묶이지 않음";
+  return eventDisplayNames[eventName] ?? eventName;
 }
 
 export function getRecentPhotos(limit = 8) {

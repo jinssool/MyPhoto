@@ -1,6 +1,6 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getPeopleGroups } from "@/data/mockPhotos";
+import { getEventDisplayName, getPeopleGroups, getPersonDisplayName } from "@/data/mockPhotos";
 
 export default function PeoplePage() {
   const peopleGroups = getPeopleGroups();
@@ -8,20 +8,20 @@ export default function PeoplePage() {
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow="Manual groups"
-        title="Family faces"
-        description="Mock people browsing uses manual labels only. Automatic face recognition is intentionally out of scope."
+        eyebrow="수동 샘플 그룹"
+        title="사람별로 보기"
+        description="사람별 보기는 샘플 이름표만 사용합니다. 자동 얼굴인식은 아직 넣지 않습니다."
       />
       <div className="browse-card-grid">
         {peopleGroups.map((group) => {
           const cover = group.photos[0];
           return (
             <article className="browse-card" key={group.name}>
-              <img src={cover.thumbnailUrl} alt={`${group.name} cover`} loading="lazy" />
+              <img src={cover.thumbnailUrl} alt={`${getPersonDisplayName(group.name)} 대표 사진`} loading="lazy" />
               <div className="browse-card__body">
-                <span>{group.photos.length} photos</span>
-                <h2>{group.name}</h2>
-                <p>{group.name === "People unknown" ? "Photos that still need a person label" : `Often seen in ${cover.eventName ?? "family memories"}`}</p>
+                <span>{group.photos.length}장</span>
+                <h2>{getPersonDisplayName(group.name)}</h2>
+                <p>{group.name === "People unknown" ? "누가 나왔는지 나중에 확인할 사진입니다" : `${getEventDisplayName(cover.eventName)}에서 자주 보입니다`}</p>
               </div>
               <div className="mini-photo-grid">
                 {group.photos.slice(0, 4).map((photo) => (

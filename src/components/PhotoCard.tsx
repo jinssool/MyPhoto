@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { MemoryPhoto } from "@/types/photo";
-import { getDisplayDate } from "@/data/mockPhotos";
+import { getDisplayDate, getPlaceDisplayName } from "@/data/mockPhotos";
 
 type PhotoCardProps = {
   photo: MemoryPhoto;
@@ -16,8 +16,8 @@ export function PhotoCard({ photo, size = "standard", showCaption = false }: Pho
       <div className="photo-card__body">
         <span className="photo-card__eyebrow">{getDisplayDate(photo)}</span>
         <h3>{photo.title}</h3>
-        <p>{showCaption ? photo.caption : photo.placeName}</p>
-        <span className="photo-card__meta">{photo.reactionCount} family reactions</span>
+        <p>{showCaption ? photo.caption : getPlaceDisplayName(photo.placeName)}</p>
+        <span className="photo-card__meta">가족 반응 {photo.reactionCount}개</span>
       </div>
     </Link>
   );

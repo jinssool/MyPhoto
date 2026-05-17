@@ -2,9 +2,11 @@ import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import {
   getAlbumCover,
+  getAlbumPhotos,
   getCleanupCandidates,
   getFeaturedPhotos,
   getLovedPhotos,
+  getPhotoCountLabel,
   getRecentPhotos,
   memoryAlbums,
   mockPhotos
@@ -22,12 +24,12 @@ export default function HomePage() {
       <section className="hero-album">
         <img src={featuredPhoto.imageUrl} alt={featuredPhoto.title} />
         <div className="hero-album__content">
-          <span>Family album</span>
-          <h1>Photos worth seeing again</h1>
+          <span>우리집 앨범</span>
+          <h1>다시 보고 싶은 가족사진</h1>
           <p>{featuredPhoto.caption}</p>
           <div className="hero-actions">
-            <a href="/timeline">Browse by year</a>
-            <a href="/events">See family events</a>
+            <a href="/timeline">시간별로 보기</a>
+            <a href="/events">추억 모음 보기</a>
           </div>
         </div>
       </section>
@@ -35,23 +37,23 @@ export default function HomePage() {
       <section className="memory-summary">
         <article>
           <strong>{mockPhotos.length}</strong>
-          <span>mock family photos</span>
+          <span>샘플 가족사진</span>
         </article>
         <article>
           <strong>{memoryAlbums.length}</strong>
-          <span>album entry points</span>
+          <span>추억 묶음</span>
         </article>
         <article>
           <strong>{cleanupCount}</strong>
-          <span>photos to review safely</span>
+          <span>정리할 사진</span>
         </article>
       </section>
 
       <section>
         <SectionHeader
-          eyebrow={`${mockPhotos.length} mock photos`}
-          title="Recently added memories"
-          description="Large photo cards keep the first screen focused on memories, not filenames."
+          eyebrow={`${mockPhotos.length}장의 샘플 사진`}
+          title="최근에 담긴 추억"
+          description="파일명이 아니라 사진과 추억이 먼저 보이도록 크게 보여줍니다."
         />
         <div className="photo-grid">
           {recentPhotos.map((photo) => (
@@ -61,7 +63,7 @@ export default function HomePage() {
       </section>
 
       <section>
-        <SectionHeader title="Most loved" description="Photos with the warmest family reactions." />
+        <SectionHeader title="가족들이 좋아한 사진" description="반응이 많이 모인 따뜻한 사진들입니다." />
         <div className="photo-grid photo-grid--four">
           {lovedPhotos.map((photo) => (
             <PhotoCard key={photo.id} photo={photo} size="large" />
@@ -70,17 +72,18 @@ export default function HomePage() {
       </section>
 
       <section>
-        <SectionHeader title="Family albums" description="Simple entry points by year, trip, and memory theme." />
+        <SectionHeader title="추억 묶음" description="연도, 여행, 가족행사별로 쉽게 들어갈 수 있게 모았습니다." />
         <div className="album-grid">
           {memoryAlbums.map((album) => {
             const cover = getAlbumCover(album);
+            const albumPhotos = getAlbumPhotos(album);
             return (
               <article className="album-card" key={album.id}>
                 <img src={cover.thumbnailUrl} alt={album.title} loading="lazy" />
                 <div>
                   <h3>{album.title}</h3>
                   <p>{album.subtitle}</p>
-                  <span>{album.photoCount} photos</span>
+                  <span>{getPhotoCountLabel(albumPhotos.length)}</span>
                 </div>
               </article>
             );
@@ -89,7 +92,7 @@ export default function HomePage() {
       </section>
 
       <section>
-        <SectionHeader title="Featured memories" description="A few bigger moments for quick family browsing." />
+        <SectionHeader title="크게 보고 싶은 장면" description="가족이 바로 알아볼 만한 대표 장면을 더 크게 보여줍니다." />
         <div className="feature-strip">
           {featuredPhotos.map((photo) => (
             <PhotoCard key={photo.id} photo={photo} size="large" showCaption />

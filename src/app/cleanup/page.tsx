@@ -20,9 +20,9 @@ export default function CleanupPage() {
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow={`${candidates.length} photos`}
-        title="Review photos safely"
-        description="These are mock app-level review candidates. This screen never deletes, renames, or moves Google Drive files."
+        eyebrow={`${candidates.length}장`}
+        title="정리함"
+        description="나중에 확인하면 좋은 샘플 후보입니다. 이 화면은 Google Drive 원본을 삭제, 이동, 이름 변경하지 않습니다."
       />
 
       <section className="memory-summary">
@@ -40,7 +40,7 @@ export default function CleanupPage() {
 
         return (
           <section className="cleanup-section" key={reason}>
-            <SectionHeader title={cleanupReasonLabels[reason]} description={`${photos.length} photos need a quick family review.`} />
+            <SectionHeader title={cleanupReasonLabels[reason]} description={`${photos.length}장을 가족 앨범에 남길지 가볍게 확인해 보세요.`} />
             <div className="photo-grid photo-grid--three">
               {photos.map((photo) => (
                 <div className="cleanup-card" key={`${reason}-${photo.id}`}>
@@ -51,12 +51,15 @@ export default function CleanupPage() {
                     ))}
                   </div>
                   <div className="cleanup-card__actions">
-                    <button type="button">Keep</button>
+                    <button type="button">포함</button>
                     <button type="button" className="secondary-button">
-                      Hide
+                      숨김
                     </button>
                     <button type="button" className="secondary-button">
-                      Exclude
+                      제외
+                    </button>
+                    <button type="button" className="secondary-button">
+                      나중에 보기
                     </button>
                   </div>
                 </div>

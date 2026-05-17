@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { cleanupReasonLabels, getAdjacentPhotos, getDisplayDate, getPhotoById, mockPhotos } from "@/data/mockPhotos";
+import {
+  cleanupReasonLabels,
+  getAdjacentPhotos,
+  getDisplayDate,
+  getEventDisplayName,
+  getPersonDisplayName,
+  getPhotoById,
+  getPlaceDisplayName,
+  mockPhotos
+} from "@/data/mockPhotos";
 
 type PhotoDetailPageProps = {
   params: Promise<{
@@ -31,10 +40,10 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
       <div className="photo-detail__panel">
         <div className="detail-top-links">
           <Link href="/" className="text-link">
-            Home
+            우리집 앨범
           </Link>
           <Link href="/timeline" className="text-link">
-            Timeline
+            시간별
           </Link>
         </div>
         <span className="photo-card__eyebrow">{getDisplayDate(photo)}</span>
@@ -42,23 +51,23 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
         <p>{photo.caption}</p>
         <dl>
           <div>
-            <dt>Place</dt>
-            <dd>{photo.placeName}</dd>
+            <dt>장소</dt>
+            <dd>{getPlaceDisplayName(photo.placeName)}</dd>
           </div>
           <div>
-            <dt>People</dt>
-            <dd>{photo.people.join(", ")}</dd>
+            <dt>사람</dt>
+            <dd>{photo.people.map(getPersonDisplayName).join(", ")}</dd>
           </div>
           <div>
-            <dt>Event</dt>
-            <dd>{photo.eventName ?? "Not grouped yet"}</dd>
+            <dt>추억 묶음</dt>
+            <dd>{getEventDisplayName(photo.eventName)}</dd>
           </div>
           <div>
-            <dt>Family reactions</dt>
-            <dd>{photo.reactionCount}</dd>
+            <dt>가족 반응</dt>
+            <dd>{photo.reactionCount}개</dd>
           </div>
           <div>
-            <dt>Filename</dt>
+            <dt>보조 정보</dt>
             <dd>{photo.filename}</dd>
           </div>
         </dl>
@@ -70,21 +79,21 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
           </div>
         ) : null}
         <div className="button-row detail-actions">
-          <button type="button">Add reaction</button>
-          <a href={photo.downloadUrl ?? "#"}>Download</a>
-          <a href={photo.originalUrl ?? "#"}>Open original</a>
+          <button type="button">반응 남기기</button>
+          <button type="button">다운로드 준비 중</button>
+          <button type="button">원본 보기 준비 중</button>
           <button type="button" className="secondary-button">
-            Hide in album
+            앨범에서 숨김
           </button>
           <button type="button" className="secondary-button">
-            Exclude from browsing
+            둘러보기에서 제외
           </button>
         </div>
-        <nav className="adjacent-photos" aria-label="Photo navigation">
-          {previousPhoto ? <Link href={`/photos/${previousPhoto.id}`}>Previous: {previousPhoto.title}</Link> : <span>First photo</span>}
-          {nextPhoto ? <Link href={`/photos/${nextPhoto.id}`}>Next: {nextPhoto.title}</Link> : <span>Last photo</span>}
+        <nav className="adjacent-photos" aria-label="사진 이동">
+          {previousPhoto ? <Link href={`/photos/${previousPhoto.id}`}>이전 사진: {previousPhoto.title}</Link> : <span>첫 번째 사진</span>}
+          {nextPhoto ? <Link href={`/photos/${nextPhoto.id}`}>다음 사진: {nextPhoto.title}</Link> : <span>마지막 사진</span>}
         </nav>
-        <p className="quiet-note">Original Google Drive files are not changed by this mock UI.</p>
+        <p className="quiet-note">이 화면의 버튼은 샘플 UI입니다. Google Drive 원본 파일은 삭제, 이동, 이름 변경되지 않습니다.</p>
       </div>
     </article>
   );

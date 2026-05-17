@@ -2,7 +2,7 @@ import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { getTimelineGroups } from "@/data/mockPhotos";
 
-const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
 export default function TimelinePage() {
   const { years, unknownDate } = getTimelineGroups();
@@ -10,16 +10,16 @@ export default function TimelinePage() {
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow="Timeline"
-        title="Browse by year and month"
-        description="Photos are grouped by taken date, with unknown dates kept safely separate for later review."
+        eyebrow="시간별"
+        title="연도와 월별로 보기"
+        description="촬영일이 있는 사진은 시간순으로, 날짜가 애매한 사진은 따로 모아 안전하게 확인합니다."
       />
 
       {years.map((yearGroup) => (
         <section className="timeline-year" key={yearGroup.year}>
           <div className="timeline-year__heading">
             <h2>{yearGroup.year}</h2>
-            <span>{yearGroup.months.reduce((count, month) => count + month.photos.length, 0)} photos</span>
+            <span>{yearGroup.months.reduce((count, month) => count + month.photos.length, 0)}장</span>
           </div>
           <div className="timeline-months">
             {yearGroup.months.map((monthGroup) => {
@@ -28,7 +28,7 @@ export default function TimelinePage() {
                 <article className="timeline-month" key={`${yearGroup.year}-${monthGroup.month}`}>
                   <div className="timeline-month__heading">
                     <strong>{monthNames[monthGroup.month - 1]}</strong>
-                    <span>{monthGroup.photos.length} photos</span>
+                    <span>{monthGroup.photos.length}장</span>
                   </div>
                   <PhotoCard photo={cover} size="large" showCaption />
                   {rest.length > 0 ? (
@@ -48,8 +48,8 @@ export default function TimelinePage() {
       {unknownDate.length > 0 ? (
         <section className="timeline-year timeline-year--unknown">
           <div className="timeline-year__heading">
-            <h2>Date unknown</h2>
-            <span>{unknownDate.length} photos to review</span>
+            <h2>날짜 확인 필요</h2>
+            <span>{unknownDate.length}장</span>
           </div>
           <div className="photo-grid">
             {unknownDate.map((photo) => (
