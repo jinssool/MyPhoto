@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getPhotoById, mockPhotos } from "@/data/mockPhotos";
+import { cleanupReasonLabels, getAdjacentPhotos, getDisplayDate, getPhotoById, mockPhotos } from "@/data/mockPhotos";
 
 type PhotoDetailPageProps = {
   params: Promise<{
@@ -21,16 +21,23 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
     notFound();
   }
 
+  const { previousPhoto, nextPhoto } = getAdjacentPhotos(photo.id);
+
   return (
     <article className="photo-detail">
       <div className="photo-detail__image">
         <img src={photo.imageUrl} alt={photo.title} />
       </div>
       <div className="photo-detail__panel">
-        <Link href="/" className="text-link">
-          Back to home
-        </Link>
-        <span className="photo-card__eyebrow">{photo.approximateDateLabel ?? photo.takenAt ?? "Date unknown"}</span>
+        <div className="detail-top-links">
+          <Link href="/" className="text-link">
+            Home
+          </Link>
+          <Link href="/timeline" className="text-link">
+            Timeline
+          </Link>
+        </div>
+        <span className="photo-card__eyebrow">{getDisplayDate(photo)}</span>
         <h1>{photo.title}</h1>
         <p>{photo.caption}</p>
         <dl>
@@ -50,12 +57,33 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
             <dt>Family reactions</dt>
             <dd>{photo.reactionCount}</dd>
           </div>
+          <div>
+            <dt>Filename</dt>
+            <dd>{photo.filename}</dd>
+          </div>
         </dl>
-        <div className="button-row">
+        {photo.cleanupReasons.length > 0 ? (
+          <div className="detail-review-list">
+            {photo.cleanupReasons.map((reason) => (
+              <span key={reason}>{cleanupReasonLabels[reason]}</span>
+            ))}
+          </div>
+        ) : null}
+        <div className="button-row detail-actions">
           <button type="button">Add reaction</button>
-          <button type="button">Download</button>
-          <button type="button">Open original</button>
+          <a href={photo.downloadUrl ?? "#"}>Download</a>
+          <a href={photo.originalUrl ?? "#"}>Open original</a>
+          <button type="button" className="secondary-button">
+            Hide in album
+          </button>
+          <button type="button" className="secondary-button">
+            Exclude from browsing
+          </button>
         </div>
+        <nav className="adjacent-photos" aria-label="Photo navigation">
+          {previousPhoto ? <Link href={`/photos/${previousPhoto.id}`}>Previous: {previousPhoto.title}</Link> : <span>First photo</span>}
+          {nextPhoto ? <Link href={`/photos/${nextPhoto.id}`}>Next: {nextPhoto.title}</Link> : <span>Last photo</span>}
+        </nav>
         <p className="quiet-note">Original Google Drive files are not changed by this mock UI.</p>
       </div>
     </article>

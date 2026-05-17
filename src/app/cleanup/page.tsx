@@ -1,40 +1,70 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { mockPhotos } from "@/data/mockPhotos";
+import { cleanupReasonLabels, getCleanupCandidates, getCleanupGroups } from "@/data/mockPhotos";
+import type { CleanupReason } from "@/types/photo";
 
-const reasonLabels: Record<string, string> = {
-  unknown_date: "Needs a date",
-  blurry_candidate: "May be blurry",
-  duplicate_candidate: "Possible duplicate",
-  screenshot_candidate: "May be a screenshot"
-};
+const cleanupOrder: CleanupReason[] = [
+  "blurry_candidate",
+  "duplicate_candidate",
+  "screenshot_candidate",
+  "document_candidate",
+  "unknown_date",
+  "unknown_place",
+  "unknown_person"
+];
 
 export default function CleanupPage() {
-  const candidates = mockPhotos.filter((photo) => photo.cleanupReasons.length > 0);
+  const candidates = getCleanupCandidates();
+  const groups = getCleanupGroups();
 
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow="Cleanup"
+        eyebrow={`${candidates.length} photos`}
         title="Review photos safely"
-        description="This page only marks app-level candidates. It does not delete, rename, or move Google Drive files."
+        description="These are mock app-level review candidates. This screen never deletes, renames, or moves Google Drive files."
       />
-      {candidates.length === 0 ? (
-        <p className="empty-state">No cleanup candidates in the current mock data.</p>
-      ) : (
-        <div className="photo-grid">
-          {candidates.map((photo) => (
-            <div className="cleanup-card" key={photo.id}>
-              <PhotoCard photo={photo} />
-              <div className="cleanup-card__reasons">
-                {photo.cleanupReasons.map((reason) => (
-                  <span key={reason}>{reasonLabels[reason] ?? reason}</span>
-                ))}
-              </div>
+
+      <section className="memory-summary">
+        {cleanupOrder.map((reason) => (
+          <article key={reason}>
+            <strong>{groups[reason]?.length ?? 0}</strong>
+            <span>{cleanupReasonLabels[reason]}</span>
+          </article>
+        ))}
+      </section>
+
+      {cleanupOrder.map((reason) => {
+        const photos = groups[reason] ?? [];
+        if (photos.length === 0) return null;
+
+        return (
+          <section className="cleanup-section" key={reason}>
+            <SectionHeader title={cleanupReasonLabels[reason]} description={`${photos.length} photos need a quick family review.`} />
+            <div className="photo-grid photo-grid--three">
+              {photos.map((photo) => (
+                <div className="cleanup-card" key={`${reason}-${photo.id}`}>
+                  <PhotoCard photo={photo} />
+                  <div className="cleanup-card__reasons">
+                    {photo.cleanupReasons.map((photoReason) => (
+                      <span key={photoReason}>{cleanupReasonLabels[photoReason]}</span>
+                    ))}
+                  </div>
+                  <div className="cleanup-card__actions">
+                    <button type="button">Keep</button>
+                    <button type="button" className="secondary-button">
+                      Hide
+                    </button>
+                    <button type="button" className="secondary-button">
+                      Exclude
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </section>
+        );
+      })}
     </div>
   );
 }

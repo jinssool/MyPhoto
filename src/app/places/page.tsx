@@ -1,36 +1,36 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getActivePhotos } from "@/data/mockPhotos";
+import { getPlaceGroups } from "@/data/mockPhotos";
 
 export default function PlacesPage() {
-  const photos = getActivePhotos();
-  const placeGroups = photos.reduce<Record<string, typeof photos>>((groups, photo) => {
-    groups[photo.placeName] = groups[photo.placeName] ?? [];
-    groups[photo.placeName].push(photo);
-    return groups;
-  }, {});
+  const placeGroups = getPlaceGroups();
 
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow="Places"
+        eyebrow={`${placeGroups.length} places`}
         title="Memories by place"
-        description="A first pass at place browsing without map APIs or exact sensitive coordinates."
+        description="Browse by familiar place names. Exact maps and sensitive coordinates stay out of this mock UI."
       />
-      <div className="place-list">
-        {Object.entries(placeGroups).map(([place, group]) => (
-          <section className="place-row" key={place}>
-            <div>
-              <h2>{place}</h2>
-              <p>{group.length} photos</p>
-            </div>
-            <div className="photo-strip">
-              {group.map((photo) => (
-                <PhotoCard key={photo.id} photo={photo} />
-              ))}
-            </div>
-          </section>
-        ))}
+      <div className="browse-card-grid">
+        {placeGroups.map((group) => {
+          const cover = group.photos[0];
+          return (
+            <article className="browse-card" key={group.name}>
+              <img src={cover.thumbnailUrl} alt={group.name} loading="lazy" />
+              <div className="browse-card__body">
+                <span>{group.photos.length} photos</span>
+                <h2>{group.name}</h2>
+                <p>{group.name === "Place unknown" ? "Ready for gentle cleanup review" : `Recent memory: ${cover.title}`}</p>
+              </div>
+              <div className="mini-photo-grid">
+                {group.photos.slice(0, 4).map((photo) => (
+                  <PhotoCard key={photo.id} photo={photo} size="compact" />
+                ))}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

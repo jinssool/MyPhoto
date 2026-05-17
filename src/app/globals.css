@@ -56,6 +56,17 @@ button:hover {
   background: var(--accent-strong);
 }
 
+.secondary-button {
+  border: 1px solid var(--line);
+  color: var(--accent-strong);
+  background: #ffffff;
+}
+
+.secondary-button:hover {
+  color: #ffffff;
+  background: var(--warm);
+}
+
 .site-shell {
   min-height: 100vh;
 }
@@ -196,6 +207,57 @@ button:hover {
   line-height: 1.55;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.hero-actions a,
+.detail-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--accent);
+  font-weight: 800;
+}
+
+.hero-actions a:last-child,
+.detail-actions a:last-child {
+  background: var(--warm);
+}
+
+.memory-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.memory-summary article {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--surface-strong);
+  box-shadow: 0 10px 24px rgba(76, 58, 36, 0.06);
+}
+
+.memory-summary strong {
+  font-size: clamp(1.85rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.memory-summary span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .section-header {
   display: grid;
   gap: 8px;
@@ -228,6 +290,16 @@ button:hover {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+.photo-grid--four {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
 .photo-card,
 .album-card,
 .person-card,
@@ -253,6 +325,28 @@ button:hover {
 
 .photo-card--large img {
   aspect-ratio: 5 / 4;
+}
+
+.photo-card--compact {
+  box-shadow: none;
+}
+
+.photo-card--compact img {
+  aspect-ratio: 1 / 1;
+}
+
+.photo-card--compact .photo-card__body {
+  padding: 10px;
+}
+
+.photo-card--compact h3 {
+  font-size: 0.95rem;
+}
+
+.photo-card--compact p,
+.photo-card--compact .photo-card__meta,
+.photo-card--compact .photo-card__eyebrow {
+  display: none;
 }
 
 .photo-card__body,
@@ -307,7 +401,8 @@ button:hover {
 
 .timeline-year,
 .event-section,
-.place-row {
+.place-row,
+.cleanup-section {
   display: grid;
   gap: 18px;
   border-top: 1px solid var(--line);
@@ -317,18 +412,43 @@ button:hover {
 .timeline-months,
 .photo-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
 }
 
 .timeline-month {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  align-content: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.timeline-year__heading,
+.timeline-month__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-year__heading span,
+.timeline-month__heading span {
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .timeline-month strong {
   color: var(--accent);
   font-size: 1.05rem;
+}
+
+.mini-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
 }
 
 .place-list {
@@ -364,6 +484,12 @@ button:hover {
   border-radius: 8px;
   padding: 22px;
   background: var(--surface-strong);
+}
+
+.detail-top-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .photo-detail__panel h1 {
@@ -409,6 +535,46 @@ button:hover {
   gap: 10px;
 }
 
+.detail-actions {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.detail-review-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-review-list span {
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--accent-strong);
+  background: #e7f1ee;
+  font-weight: 800;
+}
+
+.adjacent-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adjacent-photos a,
+.adjacent-photos span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--muted);
+  background: #fffaf2;
+  font-weight: 800;
+}
+
+.adjacent-photos a {
+  color: var(--accent-strong);
+  background: #ffffff;
+}
+
 .text-link {
   width: fit-content;
   color: var(--accent);
@@ -445,6 +611,96 @@ button:hover {
   font-weight: 800;
 }
 
+.cleanup-card__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding: 12px 14px 16px;
+}
+
+.cleanup-card__actions button {
+  padding: 0 10px;
+}
+
+.browse-card-grid,
+.event-gallery {
+  display: grid;
+  gap: 20px;
+}
+
+.browse-card,
+.event-cover {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  box-shadow: 0 10px 24px rgba(76, 58, 36, 0.08);
+}
+
+.browse-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(220px, 0.8fr) minmax(260px, 1fr);
+  align-items: stretch;
+}
+
+.browse-card > img {
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  object-fit: cover;
+}
+
+.browse-card__body,
+.event-cover div {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 22px;
+}
+
+.browse-card__body span,
+.event-cover span {
+  color: var(--warm);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.browse-card__body h2,
+.event-cover h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3vw, 2.4rem);
+}
+
+.browse-card__body p,
+.event-cover p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.browse-card > .mini-photo-grid {
+  align-content: center;
+  padding: 14px;
+}
+
+.event-section {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.event-cover {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.65fr) 1fr;
+}
+
+.event-cover img {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  object-fit: cover;
+}
+
 .status-panel ul {
   display: grid;
   gap: 10px;
@@ -465,6 +721,17 @@ button:hover {
 
   .photo-detail {
     grid-template-columns: 1fr;
+  }
+
+  .browse-card,
+  .event-cover {
+    grid-template-columns: 1fr;
+  }
+
+  .browse-card > img,
+  .event-cover img {
+    min-height: auto;
+    aspect-ratio: 16 / 10;
   }
 }
 
@@ -494,5 +761,10 @@ button:hover {
   .photo-detail dl div {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .adjacent-photos,
+  .cleanup-card__actions {
+    grid-template-columns: 1fr;
   }
 }

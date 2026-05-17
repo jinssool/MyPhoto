@@ -1,40 +1,68 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getActivePhotos, getAlbumCover, memoryAlbums, mockPhotos } from "@/data/mockPhotos";
+import {
+  getAlbumCover,
+  getCleanupCandidates,
+  getFeaturedPhotos,
+  getLovedPhotos,
+  getRecentPhotos,
+  memoryAlbums,
+  mockPhotos
+} from "@/data/mockPhotos";
 
 export default function HomePage() {
-  const activePhotos = getActivePhotos();
-  const featuredPhoto = activePhotos[3] ?? activePhotos[0];
-  const recentPhotos = activePhotos.slice(0, 4);
-  const lovedPhotos = [...activePhotos].sort((a, b) => b.reactionCount - a.reactionCount).slice(0, 3);
+  const featuredPhotos = getFeaturedPhotos();
+  const featuredPhoto = featuredPhotos[0] ?? getRecentPhotos(1)[0];
+  const recentPhotos = getRecentPhotos(8);
+  const lovedPhotos = getLovedPhotos(4);
+  const cleanupCount = getCleanupCandidates().length;
 
   return (
     <div className="page-stack">
       <section className="hero-album">
         <img src={featuredPhoto.imageUrl} alt={featuredPhoto.title} />
         <div className="hero-album__content">
-          <span>Today's memory</span>
-          <h1>{featuredPhoto.title}</h1>
+          <span>Family album</span>
+          <h1>Photos worth seeing again</h1>
           <p>{featuredPhoto.caption}</p>
+          <div className="hero-actions">
+            <a href="/timeline">Browse by year</a>
+            <a href="/events">See family events</a>
+          </div>
         </div>
+      </section>
+
+      <section className="memory-summary">
+        <article>
+          <strong>{mockPhotos.length}</strong>
+          <span>mock family photos</span>
+        </article>
+        <article>
+          <strong>{memoryAlbums.length}</strong>
+          <span>album entry points</span>
+        </article>
+        <article>
+          <strong>{cleanupCount}</strong>
+          <span>photos to review safely</span>
+        </article>
       </section>
 
       <section>
         <SectionHeader
           eyebrow={`${mockPhotos.length} mock photos`}
-          title="Recent family photos"
-          description="Large photo cards keep the first screen focused on memories, not files."
+          title="Recently added memories"
+          description="Large photo cards keep the first screen focused on memories, not filenames."
         />
         <div className="photo-grid">
           {recentPhotos.map((photo) => (
-            <PhotoCard key={photo.id} photo={photo} />
+            <PhotoCard key={photo.id} photo={photo} showCaption />
           ))}
         </div>
       </section>
 
       <section>
         <SectionHeader title="Most loved" description="Photos with the warmest family reactions." />
-        <div className="photo-grid photo-grid--three">
+        <div className="photo-grid photo-grid--four">
           {lovedPhotos.map((photo) => (
             <PhotoCard key={photo.id} photo={photo} size="large" />
           ))}
@@ -57,6 +85,15 @@ export default function HomePage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeader title="Featured memories" description="A few bigger moments for quick family browsing." />
+        <div className="feature-strip">
+          {featuredPhotos.map((photo) => (
+            <PhotoCard key={photo.id} photo={photo} size="large" showCaption />
+          ))}
         </div>
       </section>
     </div>

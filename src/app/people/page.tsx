@@ -1,42 +1,37 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getActivePhotos } from "@/data/mockPhotos";
+import { getPeopleGroups } from "@/data/mockPhotos";
 
 export default function PeoplePage() {
-  const people = ["Mom", "Dad", "Grandma", "Jisoo", "Min"];
+  const peopleGroups = getPeopleGroups();
 
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow="People"
+        eyebrow="Manual groups"
         title="Family faces"
-        description="Manual people groups only. Automatic face recognition is intentionally out of scope for this scaffold."
+        description="Mock people browsing uses manual labels only. Automatic face recognition is intentionally out of scope."
       />
-      <div className="people-grid">
-        {people.map((person) => {
-          const photos = getActivePhotos().filter((photo) => photo.people.includes(person));
-          const cover = photos[0] ?? getActivePhotos()[0];
+      <div className="browse-card-grid">
+        {peopleGroups.map((group) => {
+          const cover = group.photos[0];
           return (
-            <article className="person-card" key={person}>
-              <img src={cover.thumbnailUrl} alt={`${person} cover`} loading="lazy" />
-              <div>
-                <h2>{person}</h2>
-                <p>{photos.length} photos</p>
+            <article className="browse-card" key={group.name}>
+              <img src={cover.thumbnailUrl} alt={`${group.name} cover`} loading="lazy" />
+              <div className="browse-card__body">
+                <span>{group.photos.length} photos</span>
+                <h2>{group.name}</h2>
+                <p>{group.name === "People unknown" ? "Photos that still need a person label" : `Often seen in ${cover.eventName ?? "family memories"}`}</p>
+              </div>
+              <div className="mini-photo-grid">
+                {group.photos.slice(0, 4).map((photo) => (
+                  <PhotoCard key={photo.id} photo={photo} size="compact" />
+                ))}
               </div>
             </article>
           );
         })}
       </div>
-      <section>
-        <SectionHeader title="Sample people photos" />
-        <div className="photo-grid">
-          {getActivePhotos()
-            .slice(0, 4)
-            .map((photo) => (
-              <PhotoCard key={photo.id} photo={photo} />
-            ))}
-        </div>
-      </section>
     </div>
   );
 }
