@@ -168,7 +168,8 @@ values
   ('00000000-0000-0000-0000-000000003025', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-025', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-025', null, 'https://picsum.photos/seed/video-call-birthday/900/650', 'Video call birthday', 'A screenshot from the year birthday candles moved online.', 'Screenshot_202004_birthday.png', 'image/png', 900, 650, '2020-04-18 12:00:00+00', 'filename', 'day', null, 'unknown', '00000000-0000-0000-0000-000000001007', null, 'active', true, false, null, 21),
   ('00000000-0000-0000-0000-000000003026', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-026', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-026', null, 'https://picsum.photos/seed/jeju-stone-wall-walk/900/700', 'Jeju stone wall walk', 'Windy weather, matching hats, and a slow walk after lunch.', 'jeju_2021_stone_wall.jpg', 'image/jpeg', 900, 700, '2021-10-04 12:00:00+00', 'filename', 'day', null, 'approximate', '00000000-0000-0000-0000-000000001009', '00000000-0000-0000-0000-000000002008', 'active', false, false, null, 47),
   ('00000000-0000-0000-0000-000000003029', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-029', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-029', null, 'https://picsum.photos/seed/hiking-map-photo/850/1050', 'Hiking map photo', 'A practical map photo that should be reviewed separately.', 'hiking_map_2022.jpg', 'image/jpeg', 850, 1050, '2022-05-21 12:00:00+00', 'filename', 'day', null, 'approximate', '00000000-0000-0000-0000-000000001010', '00000000-0000-0000-0000-000000002009', 'active', false, true, null, 3),
-  ('00000000-0000-0000-0000-000000003030', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-030', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-030', null, 'https://picsum.photos/seed/family-reunion-dinner/900/650', 'Family reunion dinner', 'A long table and every chair filled.', 'reunion_2023_dinner.jpg', 'image/jpeg', 900, 650, '2023-11-18 12:00:00+00', 'filename', 'day', null, 'approximate', '00000000-0000-0000-0000-000000001011', '00000000-0000-0000-0000-000000002010', 'active', false, false, null, 58)
+  ('00000000-0000-0000-0000-000000003030', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-030', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-030', null, 'https://picsum.photos/seed/family-reunion-dinner/900/650', 'Family reunion dinner', 'A long table and every chair filled.', 'reunion_2023_dinner.jpg', 'image/jpeg', 900, 650, '2023-11-18 12:00:00+00', 'filename', 'day', null, 'approximate', '00000000-0000-0000-0000-000000001011', '00000000-0000-0000-0000-000000002010', 'active', false, false, null, 58),
+  ('00000000-0000-0000-0000-000000003031', '00000000-0000-0000-0000-000000000001', 'mock-drive-p-031', 'mock-drive-folder-family-photos', 'https://drive.google.com/mock/p-031', null, 'https://picsum.photos/seed/family-reunion-dinner-alt/900/650', 'Reunion group duplicate', 'A near-duplicate group photo from the same dinner.', 'reunion_2023_dinner_alt.jpg', 'image/jpeg', 900, 650, '2023-11-18 12:01:00+00', 'filename', 'day', null, 'approximate', '00000000-0000-0000-0000-000000001011', '00000000-0000-0000-0000-000000002010', 'active', false, false, 'dup-reunion-001', 12)
 on conflict (family_id, drive_file_id) do update set
   drive_web_view_link = excluded.drive_web_view_link,
   drive_thumbnail_link = excluded.drive_thumbnail_link,
@@ -267,6 +268,7 @@ values
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003006', 'unknown_person', 'No person labels assigned.', 0.95, 'pending'),
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003010', 'blurry_candidate', 'Soft campfire image marked for family review.', 0.72, 'pending'),
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003011', 'duplicate_candidate', 'Near-duplicate picnic frame.', 0.86, 'pending'),
+  ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003031', 'duplicate_candidate', 'Near-duplicate reunion group frame.', 0.86, 'pending'),
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003018', 'screenshot_candidate', 'Travel ticket screenshot.', 0.92, 'review_later'),
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003018', 'unknown_person', 'No family member labels.', 0.90, 'pending'),
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000003019', 'document_candidate', 'Receipt-like image.', 0.91, 'pending'),
@@ -278,3 +280,67 @@ on conflict (family_id, photo_id, candidate_type) do update set
   reason = excluded.reason,
   confidence = excluded.confidence,
   status = excluded.status;
+
+update places
+set photo_count = coalesce(counts.photo_count, 0)
+from (
+  select place_id, count(*)::integer as photo_count
+  from photos
+  where family_id = '00000000-0000-0000-0000-000000000001'
+    and place_id is not null
+  group by place_id
+) counts
+where places.id = counts.place_id
+  and places.family_id = '00000000-0000-0000-0000-000000000001';
+
+update places
+set photo_count = 0
+where family_id = '00000000-0000-0000-0000-000000000001'
+  and id not in (
+    select distinct place_id
+    from photos
+    where family_id = '00000000-0000-0000-0000-000000000001'
+      and place_id is not null
+  );
+
+update events
+set photo_count = coalesce(counts.photo_count, 0)
+from (
+  select event_id, count(*)::integer as photo_count
+  from photos
+  where family_id = '00000000-0000-0000-0000-000000000001'
+    and event_id is not null
+  group by event_id
+) counts
+where events.id = counts.event_id
+  and events.family_id = '00000000-0000-0000-0000-000000000001';
+
+update events
+set photo_count = 0
+where family_id = '00000000-0000-0000-0000-000000000001'
+  and id not in (
+    select distinct event_id
+    from photos
+    where family_id = '00000000-0000-0000-0000-000000000001'
+      and event_id is not null
+  );
+
+update person_clusters
+set photo_count = coalesce(counts.photo_count, 0)
+from (
+  select person_cluster_id, count(*)::integer as photo_count
+  from person_photos
+  where family_id = '00000000-0000-0000-0000-000000000001'
+  group by person_cluster_id
+) counts
+where person_clusters.id = counts.person_cluster_id
+  and person_clusters.family_id = '00000000-0000-0000-0000-000000000001';
+
+update person_clusters
+set photo_count = 0
+where family_id = '00000000-0000-0000-0000-000000000001'
+  and id not in (
+    select distinct person_cluster_id
+    from person_photos
+    where family_id = '00000000-0000-0000-0000-000000000001'
+  );
