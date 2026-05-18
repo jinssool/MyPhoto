@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:query-layer": "node scripts/validate-query-layer.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

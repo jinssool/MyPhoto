@@ -7,6 +7,7 @@ import {
   getRecentPhotos,
   getTimelineGroups as getMockTimelineGroups
 } from "@/data/mockPhotos";
+import { REVIEWABLE_CLEANUP_STATUSES } from "@/lib/cleanup/constants";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { CleanupCandidateRow, EventRow, PersonClusterRow, PhotoRow, PlaceRow } from "@/types/database";
@@ -191,7 +192,7 @@ async function loadPhotoRelations(familyId: string, photos: PhotoRow[]): Promise
       .from("cleanup_candidates")
       .select("photo_id,candidate_type")
       .eq("family_id", familyId)
-      .in("status", ["pending", "review_later"])
+      .in("status", REVIEWABLE_CLEANUP_STATUSES)
       .in("photo_id", photoIds);
 
     if (cleanupError) throw cleanupError;
@@ -203,6 +204,36 @@ async function loadPhotoRelations(familyId: string, photos: PhotoRow[]): Promise
   }
 
   return relations;
+}
+
+async function countReviewableCleanupPhotos(familyId: string) {
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) {
+    return getMockCleanupCandidates().length;
+  }
+
+  const { data: candidates, error: candidateError } = await supabase
+    .from("cleanup_candidates")
+    .select("photo_id")
+    .eq("family_id", familyId)
+    .in("status", REVIEWABLE_CLEANUP_STATUSES);
+
+  if (candidateError) throw candidateError;
+
+  const photoIds = [...new Set(candidates?.map((candidate) => candidate.photo_id) ?? [])];
+  if (photoIds.length === 0) return 0;
+
+  const { count, error: photoError } = await supabase
+    .from("photos")
+    .select("id", { count: "exact", head: true })
+    .eq("family_id", familyId)
+    .eq("visibility_state", "active")
+    .in("id", photoIds);
+
+  if (photoError) throw photoError;
+
+  return count ?? 0;
 }
 
 export async function mapPhotoRowsWithRelations(familyId: string, photos: PhotoRow[]) {
@@ -241,20 +272,12 @@ export async function getHomeHighlights(familyId = MOCK_FAMILY_ID): Promise<Home
   const lovedPhotos = [...mappedPhotos].sort((a, b) => b.reactionCount - a.reactionCount).slice(0, 6);
   const recentPhotos = [...mappedPhotos].sort(byTakenAtDesc).slice(0, 8);
 
-  const { count, error: cleanupError } = await supabase
-    .from("cleanup_candidates")
-    .select("id", { count: "exact", head: true })
-    .eq("family_id", familyId)
-    .eq("status", "pending");
-
-  if (cleanupError) throw cleanupError;
-
   return {
     featuredPhotos,
     featuredPhoto: featuredPhotos[0] ?? lovedPhotos[0] ?? null,
     recentPhotos,
     lovedPhotos,
-    cleanupCount: count ?? 0
+    cleanupCount: await countReviewableCleanupPhotos(familyId)
   };
 }
 

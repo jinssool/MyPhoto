@@ -34,6 +34,7 @@ export async function addReaction(
 
   if (selectError) throw selectError;
 
+  // TODO: This read-then-write increment is not atomic. Replace it with a Postgres RPC before multi-user use.
   const nextCount = (existing?.count ?? 0) + 1;
   const mutation = existing
     ? supabase

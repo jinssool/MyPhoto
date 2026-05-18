@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { CleanupCandidateStatus } from "@/types/database";
 import type { CleanupReason, MemoryPhoto } from "@/types/photo";
 
+import { REVIEWABLE_CLEANUP_STATUSES } from "./constants";
+
 export type CleanupCandidateGroup = {
   reason: CleanupReason;
   label: string;
@@ -27,7 +29,7 @@ export async function getCleanupCandidates(familyId = MOCK_FAMILY_ID): Promise<C
     .from("cleanup_candidates")
     .select("*")
     .eq("family_id", familyId)
-    .in("status", ["pending", "review_later"]);
+    .in("status", REVIEWABLE_CLEANUP_STATUSES);
 
   if (error) throw error;
 
