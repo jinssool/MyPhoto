@@ -161,53 +161,67 @@ export type Database = {
         Row: FamilyRow;
         Insert: Omit<Partial<FamilyRow>, "created_at" | "updated_at"> & Pick<FamilyRow, "name">;
         Update: Partial<Omit<FamilyRow, "id" | "created_at">>;
+        Relationships: [];
       };
       drive_connections: {
         Row: DriveConnectionRow;
         Insert: Omit<Partial<DriveConnectionRow>, "created_at" | "updated_at"> & Pick<DriveConnectionRow, "family_id">;
         Update: Partial<Omit<DriveConnectionRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       import_jobs: {
         Row: ImportJobRow;
         Insert: Omit<Partial<ImportJobRow>, "created_at"> & Pick<ImportJobRow, "family_id">;
         Update: Partial<Omit<ImportJobRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       places: {
         Row: PlaceRow;
         Insert: Omit<Partial<PlaceRow>, "created_at" | "updated_at"> & Pick<PlaceRow, "family_id" | "name" | "display_name">;
         Update: Partial<Omit<PlaceRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       events: {
         Row: EventRow;
         Insert: Omit<Partial<EventRow>, "created_at" | "updated_at"> & Pick<EventRow, "family_id" | "title">;
         Update: Partial<Omit<EventRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       photos: {
         Row: PhotoRow;
         Insert: Omit<Partial<PhotoRow>, "created_at" | "updated_at"> & Pick<PhotoRow, "family_id" | "drive_file_id" | "filename">;
         Update: Partial<Omit<PhotoRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       person_clusters: {
         Row: PersonClusterRow;
         Insert: Omit<Partial<PersonClusterRow>, "created_at" | "updated_at"> & Pick<PersonClusterRow, "family_id" | "display_name">;
         Update: Partial<Omit<PersonClusterRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       person_photos: {
         Row: PersonPhotoRow;
         Insert: Omit<Partial<PersonPhotoRow>, "created_at"> & Pick<PersonPhotoRow, "family_id" | "person_cluster_id" | "photo_id">;
         Update: Partial<Omit<PersonPhotoRow, "id" | "family_id" | "created_at">>;
+        Relationships: [];
       };
       reactions: {
         Row: ReactionRow;
         Insert: Omit<Partial<ReactionRow>, "created_at" | "updated_at"> & Pick<ReactionRow, "family_id" | "photo_id" | "reaction_type">;
         Update: Partial<Omit<ReactionRow, "id" | "family_id" | "photo_id" | "reaction_type" | "created_at">>;
+        Relationships: [];
       };
       cleanup_candidates: {
         Row: CleanupCandidateRow;
         Insert: Omit<Partial<CleanupCandidateRow>, "created_at" | "updated_at"> &
           Pick<CleanupCandidateRow, "family_id" | "photo_id" | "candidate_type">;
         Update: Partial<Omit<CleanupCandidateRow, "id" | "family_id" | "photo_id" | "candidate_type" | "created_at">>;
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };
