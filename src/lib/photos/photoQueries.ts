@@ -1,5 +1,6 @@
 import {
   getAdjacentPhotos as getMockAdjacentPhotos,
+  getActivePhotos,
   getCleanupCandidates as getMockCleanupCandidates,
   getFeaturedPhotos,
   getLovedPhotos,
@@ -42,6 +43,7 @@ export type HomeHighlights = {
   recentPhotos: MemoryPhoto[];
   lovedPhotos: MemoryPhoto[];
   cleanupCount: number;
+  totalPhotoCount: number;
 };
 
 export type PhotoDetailResult = {
@@ -73,7 +75,8 @@ function createMockHomeHighlights(): HomeHighlights {
     featuredPhoto: featuredPhotos[0] ?? lovedPhotos[0] ?? null,
     recentPhotos: getRecentPhotos(8),
     lovedPhotos,
-    cleanupCount: getMockCleanupCandidates().length
+    cleanupCount: getMockCleanupCandidates().length,
+    totalPhotoCount: getActivePhotos().length
   };
 }
 
@@ -271,13 +274,21 @@ export async function getHomeHighlights(familyId = MOCK_FAMILY_ID): Promise<Home
   const featuredPhotos = mappedPhotos.filter((photo) => photo.isFeatured).slice(0, 4);
   const lovedPhotos = [...mappedPhotos].sort((a, b) => b.reactionCount - a.reactionCount).slice(0, 6);
   const recentPhotos = [...mappedPhotos].sort(byTakenAtDesc).slice(0, 8);
+  const { count: totalPhotoCount, error: totalPhotoCountError } = await supabase
+    .from("photos")
+    .select("id", { count: "exact", head: true })
+    .eq("family_id", familyId)
+    .eq("visibility_state", "active");
+
+  if (totalPhotoCountError) throw totalPhotoCountError;
 
   return {
     featuredPhotos,
     featuredPhoto: featuredPhotos[0] ?? lovedPhotos[0] ?? null,
     recentPhotos,
     lovedPhotos,
-    cleanupCount: await countReviewableCleanupPhotos(familyId)
+    cleanupCount: await countReviewableCleanupPhotos(familyId),
+    totalPhotoCount: totalPhotoCount ?? mappedPhotos.length
   };
 }
 

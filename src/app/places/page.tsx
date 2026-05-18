@@ -1,9 +1,10 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getPlaceDisplayName, getPlaceGroups } from "@/data/mockPhotos";
+import { MOCK_FAMILY_ID } from "@/lib/family/constants";
+import { getPlaces } from "@/lib/places/placeQueries";
 
-export default function PlacesPage() {
-  const placeGroups = getPlaceGroups();
+export default async function PlacesPage() {
+  const placeGroups = await getPlaces(MOCK_FAMILY_ID);
 
   return (
     <div className="page-stack">
@@ -15,12 +16,14 @@ export default function PlacesPage() {
       <div className="browse-card-grid">
         {placeGroups.map((group) => {
           const cover = group.photos[0];
+          if (!cover) return null;
+
           return (
             <article className="browse-card" key={group.name}>
-              <img src={cover.thumbnailUrl} alt={getPlaceDisplayName(group.name)} loading="lazy" />
+              <img src={cover.thumbnailUrl} alt={group.displayName} loading="lazy" />
               <div className="browse-card__body">
-                <span>{group.photos.length}장</span>
-                <h2>{getPlaceDisplayName(group.name)}</h2>
+                <span>{group.photoCount}장</span>
+                <h2>{group.displayName}</h2>
                 <p>{group.name === "Place unknown" ? "장소를 나중에 확인할 사진입니다" : `대표 사진: ${cover.title}`}</p>
               </div>
               <div className="mini-photo-grid">

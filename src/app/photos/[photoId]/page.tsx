@@ -3,14 +3,13 @@ import { notFound } from "next/navigation";
 
 import {
   cleanupReasonLabels,
-  getAdjacentPhotos,
   getDisplayDate,
   getEventDisplayName,
   getPersonDisplayName,
-  getPhotoById,
   getPlaceDisplayName,
-  mockPhotos
 } from "@/data/mockPhotos";
+import { MOCK_FAMILY_ID } from "@/lib/family/constants";
+import { getPhotoDetail } from "@/lib/photos/photoQueries";
 
 type PhotoDetailPageProps = {
   params: Promise<{
@@ -18,19 +17,13 @@ type PhotoDetailPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return mockPhotos.map((photo) => ({ photoId: photo.id }));
-}
-
 export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) {
   const { photoId } = await params;
-  const photo = getPhotoById(photoId);
+  const { photo, previousPhoto, nextPhoto } = await getPhotoDetail(MOCK_FAMILY_ID, photoId);
 
   if (!photo) {
     notFound();
   }
-
-  const { previousPhoto, nextPhoto } = getAdjacentPhotos(photo.id);
 
   return (
     <article className="photo-detail">

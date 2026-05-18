@@ -1,9 +1,10 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getEventDisplayName, getEventGroups } from "@/data/mockPhotos";
+import { MOCK_FAMILY_ID } from "@/lib/family/constants";
+import { getEvents } from "@/lib/events/eventQueries";
 
-export default function EventsPage() {
-  const eventGroups = getEventGroups();
+export default async function EventsPage() {
+  const eventGroups = await getEvents(MOCK_FAMILY_ID);
 
   return (
     <div className="page-stack">
@@ -15,14 +16,16 @@ export default function EventsPage() {
       <div className="event-gallery">
         {eventGroups.map((event) => {
           const cover = event.photos[0];
+          if (!cover) return null;
+
           return (
             <section className="event-section" key={event.name}>
               <div className="event-cover">
-                <img src={cover.thumbnailUrl} alt={getEventDisplayName(event.name)} loading="lazy" />
+                <img src={cover.thumbnailUrl} alt={event.displayName} loading="lazy" />
                 <div>
                   <span>{event.dateLabel}</span>
-                  <h2>{getEventDisplayName(event.name)}</h2>
-                  <p>{event.photos.length}장</p>
+                  <h2>{event.displayName}</h2>
+                  <p>{event.photoCount}장</p>
                 </div>
               </div>
               <div className="photo-grid photo-grid--four">

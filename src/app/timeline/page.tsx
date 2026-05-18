@@ -1,11 +1,12 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { getTimelineGroups } from "@/data/mockPhotos";
+import { MOCK_FAMILY_ID } from "@/lib/family/constants";
+import { getTimelinePhotos } from "@/lib/photos/photoQueries";
 
 const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
-export default function TimelinePage() {
-  const { years, unknownDate } = getTimelineGroups();
+export default async function TimelinePage() {
+  const { years, unknownDate } = await getTimelinePhotos(MOCK_FAMILY_ID);
 
   return (
     <div className="page-stack">

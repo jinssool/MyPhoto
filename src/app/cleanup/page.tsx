@@ -1,6 +1,8 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
-import { cleanupReasonLabels, getCleanupCandidates, getCleanupGroups } from "@/data/mockPhotos";
+import { cleanupReasonLabels } from "@/data/mockPhotos";
+import { getCleanupCandidates } from "@/lib/cleanup/cleanupQueries";
+import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import type { CleanupReason } from "@/types/photo";
 
 const cleanupOrder: CleanupReason[] = [
@@ -13,14 +15,18 @@ const cleanupOrder: CleanupReason[] = [
   "unknown_person"
 ];
 
-export default function CleanupPage() {
-  const candidates = getCleanupCandidates();
-  const groups = getCleanupGroups();
+export default async function CleanupPage() {
+  const cleanupGroups = await getCleanupCandidates(MOCK_FAMILY_ID);
+  const groups = cleanupGroups.reduce<Partial<Record<CleanupReason, (typeof cleanupGroups)[number]["photos"]>>>((accumulator, group) => {
+    accumulator[group.reason] = group.photos;
+    return accumulator;
+  }, {});
+  const candidateCount = new Set(cleanupGroups.flatMap((group) => group.photos.map((photo) => photo.id))).size;
 
   return (
     <div className="page-stack">
       <SectionHeader
-        eyebrow={`${candidates.length}장`}
+        eyebrow={`${candidateCount}장`}
         title="정리함"
         description="나중에 확인하면 좋은 샘플 후보입니다. 이 화면은 Google Drive 원본을 삭제, 이동, 이름 변경하지 않습니다."
       />
