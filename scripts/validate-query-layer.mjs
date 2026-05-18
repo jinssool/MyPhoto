@@ -8,10 +8,20 @@ const queryFiles = [
   "src/lib/places/placeQueries.ts",
   "src/lib/people/personQueries.ts",
   "src/lib/events/eventQueries.ts",
-  "src/lib/cleanup/cleanupQueries.ts"
+  "src/lib/cleanup/cleanupQueries.ts",
+  "src/lib/drive/driveConnectionQueries.ts"
 ];
 
 const forbiddenSecretPatterns = [/SERVICE_ROLE/i, /service_role/i, /SUPABASE_SERVICE/i];
+const googleServerFiles = [
+  ".env.example",
+  "src/lib/google/googleTypes.ts",
+  "src/lib/google/oauth.ts",
+  "src/lib/drive/driveConnectionQueries.ts",
+  "src/app/api/google/drive/oauth/start/route.ts",
+  "src/app/api/google/drive/oauth/callback/route.ts",
+  "src/app/admin/import/page.tsx"
+];
 const clientDirectories = ["src/app", "src/components"];
 
 function read(path) {
@@ -56,11 +66,54 @@ function assertNoClientSupabaseImports() {
   const clientFiles = clientDirectories.flatMap(walk).filter((file) => /\.(ts|tsx)$/.test(file));
   const offenders = clientFiles.filter((file) => {
     const source = read(file);
+    if (!source.includes('"use client"') && !source.includes("'use client'")) return false;
+
     return source.includes("@supabase/supabase-js") || source.includes("createSupabaseServerClient");
   });
 
   if (offenders.length > 0) {
     throw new Error(`Client-side Supabase import found in: ${offenders.join(", ")}`);
+  }
+}
+
+function assertNoClientGoogleSecretUsage() {
+  const clientFiles = clientDirectories.flatMap(walk).filter((file) => /\.(ts|tsx)$/.test(file));
+  const offenders = clientFiles.filter((file) => {
+    const source = read(file);
+    if (!source.includes('"use client"') && !source.includes("'use client'")) return false;
+
+    return source.includes("GOOGLE_CLIENT_SECRET") || source.includes("refresh_token") || source.includes("access_token");
+  });
+
+  if (offenders.length > 0) {
+    throw new Error(`Client-side Google secret/token usage found in: ${offenders.join(", ")}`);
+  }
+}
+
+function assertNoDriveWriteScopesOrImportLogic() {
+  const files = [...googleServerFiles, ...queryFiles];
+  const forbiddenScopeFragments = [
+    "https://www.googleapis.com/auth/drive\"",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.appdata",
+    "https://www.googleapis.com/auth/drive.metadata",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "https://www.googleapis.com/auth/drive.photos.readonly"
+  ];
+  const forbiddenLogicFragments = ["files.list", "drive.files", 'from "googleapis"', "from 'googleapis'"];
+  const offenders = [];
+
+  for (const file of files) {
+    const source = read(file);
+    const hits = [...forbiddenScopeFragments, ...forbiddenLogicFragments].filter((fragment) => source.includes(fragment));
+
+    if (hits.length > 0) {
+      offenders.push(`${file}: ${hits.join(", ")}`);
+    }
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(`Forbidden Drive scope or import logic found:\n${offenders.join("\n")}`);
   }
 }
 
@@ -89,6 +142,8 @@ function assertFamilyScopedQueries() {
 
 assertNoPrivilegedKeyReferences();
 assertNoClientSupabaseImports();
+assertNoClientGoogleSecretUsage();
+assertNoDriveWriteScopesOrImportLogic();
 assertFamilyScopedQueries();
 
 console.log("Query layer validation passed.");
