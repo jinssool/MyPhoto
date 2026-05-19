@@ -21,6 +21,22 @@ npm run build
 
 The local app runs at `http://localhost:3000` by default.
 
+## Local Drive OAuth Token Encryption
+
+Google Drive OAuth tokens are stored only after server-side encryption. Generate a local 32-byte base64 key:
+
+```bash
+openssl rand -base64 32
+```
+
+Place the generated value in `.env.local`:
+
+```bash
+TOKEN_ENCRYPTION_KEY=<generated value>
+```
+
+Never commit `.env.local`, and never use `NEXT_PUBLIC_` for this key.
+
 ## Product Rules
 
 - This is not a storage service.

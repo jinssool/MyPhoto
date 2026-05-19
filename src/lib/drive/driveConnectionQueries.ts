@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { decryptToken, encryptToken } from "@/lib/security/tokenCrypto";
 import type { DriveConnectionRow } from "@/types/database";
 
 import type { GoogleTokenResponse } from "../google/googleTypes";
@@ -9,13 +10,6 @@ function getTokenExpiresAt(tokenResponse: GoogleTokenResponse) {
   if (!tokenResponse.expires_in) return null;
 
   return new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString();
-}
-
-function getLocalDevTokenPlaceholder(kind: "access" | "refresh", tokenValue: string | undefined) {
-  if (!tokenValue) return null;
-
-  // TODO: Replace this placeholder with real server-side encryption before Drive scanning/import work.
-  return `local-dev-${kind}-token-placeholder-not-encrypted`;
 }
 
 export async function getDriveConnection(familyId: string): Promise<DriveConnectionRow | null> {
@@ -49,10 +43,16 @@ export async function upsertDriveConnectionFromOAuth(
   }
 
   const existingConnection = await getDriveConnection(familyId);
+  if (!tokenResponse.access_token) {
+    throw new Error("Google OAuth token response did not include an access token.");
+  }
+
   const connectionFields = {
     google_account_email: null,
-    access_token_encrypted: getLocalDevTokenPlaceholder("access", tokenResponse.access_token),
-    refresh_token_encrypted: getLocalDevTokenPlaceholder("refresh", tokenResponse.refresh_token),
+    access_token_encrypted: encryptToken(tokenResponse.access_token),
+    refresh_token_encrypted: tokenResponse.refresh_token
+      ? encryptToken(tokenResponse.refresh_token)
+      : existingConnection?.refresh_token_encrypted ?? null,
     token_expires_at: getTokenExpiresAt(tokenResponse),
     status: "active" as const,
     last_synced_at: null
@@ -80,4 +80,18 @@ export async function upsertDriveConnectionFromOAuth(
   if (error) throw error;
 
   return data;
+}
+
+export async function getDecryptedDriveTokens(familyId: string) {
+  const connection = await getDriveConnection(familyId);
+
+  if (!connection || connection.status !== "active" || !connection.access_token_encrypted) {
+    return null;
+  }
+
+  return {
+    accessToken: decryptToken(connection.access_token_encrypted),
+    refreshToken: connection.refresh_token_encrypted ? decryptToken(connection.refresh_token_encrypted) : null,
+    tokenExpiresAt: connection.token_expires_at
+  };
 }

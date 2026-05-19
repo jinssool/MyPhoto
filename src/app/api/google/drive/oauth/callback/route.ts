@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertDriveConnectionFromOAuth } from "@/lib/drive/driveConnectionQueries";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import { exchangeGoogleOAuthCodeForTokens, getGoogleOAuthConfig } from "@/lib/google/oauth";
+import { assertTokenEncryptionConfigured, TokenEncryptionConfigError } from "@/lib/security/tokenCrypto";
 
 function redirectToImport(request: NextRequest, status: string) {
   return NextResponse.redirect(new URL(`/admin/import?drive=${status}`, request.url));
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    assertTokenEncryptionConfigured();
     const tokenResponse = await exchangeGoogleOAuthCodeForTokens(configResult.config, code);
     const connection = await upsertDriveConnectionFromOAuth(MOCK_FAMILY_ID, tokenResponse);
 
@@ -39,7 +41,11 @@ export async function GET(request: NextRequest) {
     }
 
     return redirectToImport(request, "connected");
-  } catch {
+  } catch (error) {
+    if (error instanceof TokenEncryptionConfigError) {
+      return redirectToImport(request, "token_encryption_not_configured");
+    }
+
     return redirectToImport(request, "oauth_failed");
   }
 }

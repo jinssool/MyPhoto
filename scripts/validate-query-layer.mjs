@@ -17,6 +17,7 @@ const googleServerFiles = [
   ".env.example",
   "src/lib/google/googleTypes.ts",
   "src/lib/google/oauth.ts",
+  "src/lib/security/tokenCrypto.ts",
   "src/lib/drive/driveConnectionQueries.ts",
   "src/app/api/google/drive/oauth/start/route.ts",
   "src/app/api/google/drive/oauth/callback/route.ts",
@@ -82,11 +83,42 @@ function assertNoClientGoogleSecretUsage() {
     const source = read(file);
     if (!source.includes('"use client"') && !source.includes("'use client'")) return false;
 
-    return source.includes("GOOGLE_CLIENT_SECRET") || source.includes("refresh_token") || source.includes("access_token");
+    return (
+      source.includes("GOOGLE_CLIENT_SECRET") ||
+      source.includes("TOKEN_ENCRYPTION_KEY") ||
+      source.includes("refresh_token") ||
+      source.includes("access_token")
+    );
   });
 
   if (offenders.length > 0) {
     throw new Error(`Client-side Google secret/token usage found in: ${offenders.join(", ")}`);
+  }
+}
+
+function assertNoRawTokenLoggingOrPlaceholders() {
+  const files = [...googleServerFiles, ...queryFiles];
+  const offenders = [];
+
+  for (const file of files) {
+    const source = read(file);
+    const hits = [];
+
+    if (/console\.(log|warn|error|info|debug)\([^)]*(access_token|refresh_token|tokenResponse)/s.test(source)) {
+      hits.push("token logging");
+    }
+
+    if (source.includes("local-dev-access-token-placeholder") || source.includes("local-dev-refresh-token-placeholder")) {
+      hits.push("local-dev token placeholder");
+    }
+
+    if (hits.length > 0) {
+      offenders.push(`${file}: ${hits.join(", ")}`);
+    }
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(`Raw token logging or placeholder storage found:\n${offenders.join("\n")}`);
   }
 }
 
@@ -143,6 +175,7 @@ function assertFamilyScopedQueries() {
 assertNoPrivilegedKeyReferences();
 assertNoClientSupabaseImports();
 assertNoClientGoogleSecretUsage();
+assertNoRawTokenLoggingOrPlaceholders();
 assertNoDriveWriteScopesOrImportLogic();
 assertFamilyScopedQueries();
 

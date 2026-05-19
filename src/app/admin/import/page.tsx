@@ -15,6 +15,7 @@ const driveStatusMessages: Record<string, string> = {
   missing_code: "Google OAuth callback에 authorization code가 없습니다.",
   invalid_state: "Google OAuth state 값이 예상과 다릅니다.",
   oauth_not_configured: "Google OAuth 환경변수가 아직 설정되지 않았습니다.",
+  token_encryption_not_configured: "TOKEN_ENCRYPTION_KEY가 없어 Drive 토큰을 안전하게 저장하지 못했습니다.",
   supabase_not_configured: "Supabase 환경변수가 없어 연결 정보를 저장하지 못했습니다.",
   oauth_failed: "Google OAuth token 교환 또는 연결 정보 저장에 실패했습니다."
 };
@@ -56,7 +57,8 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <li>Google Drive 연결 상태: {formatConnectionStatus(driveConnection?.status)}</li>
           <li>연결 계정: {driveConnection?.google_account_email ?? "아직 확인되지 않음"}</li>
           <li>토큰 만료 시각: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
-          <li>가져오기 상태: OAuth skeleton만 준비됨</li>
+          <li>토큰 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
+          <li>가져오기 상태: OAuth와 암호화 저장만 준비됨</li>
         </ul>
       </section>
       <section className="status-panel">
