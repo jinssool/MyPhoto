@@ -8,7 +8,19 @@ An image-centered family photo memory album web app scaffold. Google Drive remai
 - Routes for home, timeline, photo detail, places, people, events, cleanup, import, and settings.
 - Shared layout and parent-friendly navigation.
 - Mock photo data and image-centered home photo cards.
-- No Google Drive API, Supabase, face recognition, comments, payments, invitations, or complex permissions yet.
+- Server-only Supabase metadata query helpers with mock fallback.
+- Google Drive read-only OAuth and folder metadata preview.
+- No Drive import, Drive mutation, face recognition, comments, payments, invitations, or complex permissions yet.
+
+## Local Drive Folder Preview
+
+After configuring Supabase, Google OAuth, and `TOKEN_ENCRYPTION_KEY` in `.env.local`, reconnect Google Drive once so tokens are encrypted. Then preview image metadata from one folder:
+
+```text
+http://localhost:3000/api/google/drive/folders/preview?folderId=<google-drive-folder-id>
+```
+
+This endpoint lists image metadata only. It does not insert photo rows, create import jobs, download originals, or modify Google Drive files.
 
 ## Commands
 

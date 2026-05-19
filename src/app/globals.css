@@ -709,6 +709,32 @@ button:hover {
   color: var(--muted);
 }
 
+.status-panel form {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.status-panel label {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.status-panel input {
+  min-height: 48px;
+  width: min(100%, 520px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: #ffffff;
+  font: inherit;
+}
+
+.status-panel form button {
+  width: fit-content;
+}
+
 @media (max-width: 860px) {
   .site-header {
     align-items: flex-start;

@@ -18,11 +18,14 @@ const googleServerFiles = [
   "src/lib/google/googleTypes.ts",
   "src/lib/google/oauth.ts",
   "src/lib/security/tokenCrypto.ts",
+  "src/lib/drive/driveApi.ts",
   "src/lib/drive/driveConnectionQueries.ts",
   "src/app/api/google/drive/oauth/start/route.ts",
   "src/app/api/google/drive/oauth/callback/route.ts",
+  "src/app/api/google/drive/folders/preview/route.ts",
   "src/app/admin/import/page.tsx"
 ];
+const approvedDriveReadFiles = new Set(["src/lib/drive/driveApi.ts"]);
 const clientDirectories = ["src/app", "src/components"];
 
 function read(path) {
@@ -133,14 +136,29 @@ function assertNoDriveWriteScopesOrImportLogic() {
     "https://www.googleapis.com/auth/drive.photos.readonly"
   ];
   const forbiddenLogicFragments = ["files.list", "drive.files", 'from "googleapis"', "from 'googleapis'"];
+  const forbiddenMutationFragments = [
+    "method: \"POST\"",
+    "method: 'POST'",
+    "method: \"PATCH\"",
+    "method: 'PATCH'",
+    "method: \"PUT\"",
+    "method: 'PUT'",
+    "method: \"DELETE\"",
+    "method: 'DELETE'",
+    "/upload/drive/",
+    "/drive/v3/files/"
+  ];
   const offenders = [];
 
   for (const file of files) {
     const source = read(file);
     const hits = [...forbiddenScopeFragments, ...forbiddenLogicFragments].filter((fragment) => source.includes(fragment));
+    const mutationHits = approvedDriveReadFiles.has(file)
+      ? forbiddenMutationFragments.filter((fragment) => source.includes(fragment))
+      : ["https://www.googleapis.com/drive/v3/files", "/drive/v3/files"].filter((fragment) => source.includes(fragment));
 
-    if (hits.length > 0) {
-      offenders.push(`${file}: ${hits.join(", ")}`);
+    if (hits.length > 0 || mutationHits.length > 0) {
+      offenders.push(`${file}: ${[...hits, ...mutationHits].join(", ")}`);
     }
   }
 

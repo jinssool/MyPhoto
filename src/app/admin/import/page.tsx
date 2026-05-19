@@ -37,8 +37,8 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
     <div className="page-stack">
       <SectionHeader
         eyebrow="사진 가져오기"
-        title="Google Drive 연결 준비"
-        description="이번 단계는 Google Drive 읽기 전용 OAuth 연결만 준비합니다. 폴더 스캔과 사진 가져오기는 아직 실행하지 않습니다."
+        title="Google Drive 연결과 폴더 미리보기"
+        description="Google Drive 읽기 전용 연결을 사용해 선택한 폴더의 이미지 메타데이터만 미리 확인합니다. 아직 사진을 앨범에 가져오지는 않습니다."
       />
       {statusMessage ? (
         <section className="status-panel">
@@ -58,13 +58,22 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <li>연결 계정: {driveConnection?.google_account_email ?? "아직 확인되지 않음"}</li>
           <li>토큰 만료 시각: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
           <li>토큰 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
-          <li>가져오기 상태: OAuth와 암호화 저장만 준비됨</li>
+          <li>가져오기 상태: 폴더 미리보기만 가능, 앨범 저장은 아직 없음</li>
         </ul>
       </section>
       <section className="status-panel">
         <h2>Google Drive 연결</h2>
         <p>이 버튼은 Drive 파일 목록을 읽거나 사진을 가져오지 않습니다. OAuth 동의 후 연결 메타데이터만 저장합니다.</p>
         <a href="/api/google/drive/oauth/start">Google Drive 연결하기</a>
+      </section>
+      <section className="status-panel">
+        <h2>폴더 이미지 미리보기</h2>
+        <p>Google Drive 폴더 ID를 넣으면 이미지 파일 메타데이터만 JSON으로 확인합니다. 원본 파일 다운로드, 이동, 삭제, 앨범 저장은 하지 않습니다.</p>
+        <form action="/api/google/drive/folders/preview" method="get">
+          <label htmlFor="folderId">Google Drive 폴더 ID</label>
+          <input id="folderId" name="folderId" placeholder="예: 1AbC..." required />
+          <button type="submit">미리보기 JSON 열기</button>
+        </form>
       </section>
     </div>
   );
