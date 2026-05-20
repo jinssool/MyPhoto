@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getDecryptedDriveTokens } from "@/lib/drive/driveConnectionQueries";
+import { DriveReconnectRequiredError, getValidDriveAccessToken } from "@/lib/drive/driveConnectionQueries";
 import { DriveApiError, listDriveImageFiles } from "@/lib/drive/driveApi";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 
@@ -41,14 +41,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tokens = await getDecryptedDriveTokens(MOCK_FAMILY_ID);
+    const accessToken = await getValidDriveAccessToken(MOCK_FAMILY_ID);
 
-    if (!tokens?.accessToken) {
-      return jsonError(401, "drive_tokens_missing", "Connect Google Drive again after configuring token encryption.");
+    if (!accessToken) {
+      return jsonError(401, "drive_tokens_missing", "Connect Google Drive before previewing a folder.");
     }
 
     const preview = await listDriveImageFiles({
-      accessToken: tokens.accessToken,
+      accessToken,
       folderId,
       pageToken,
       pageSize
@@ -63,6 +63,10 @@ export async function GET(request: NextRequest) {
       candidates: preview.candidates
     });
   } catch (error) {
+    if (error instanceof DriveReconnectRequiredError) {
+      return jsonError(401, "drive_reconnect_required", "Google Drive access expired. Reconnect Google Drive.");
+    }
+
     if (error instanceof DriveApiError && (error.status === 401 || error.status === 403)) {
       return jsonError(401, "drive_tokens_invalid", "Google Drive access is unavailable. Reconnect Google Drive.");
     }

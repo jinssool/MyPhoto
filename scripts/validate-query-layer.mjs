@@ -17,6 +17,7 @@ const googleServerFiles = [
   ".env.example",
   "src/lib/google/googleTypes.ts",
   "src/lib/google/oauth.ts",
+  "src/lib/google/tokenRefresh.ts",
   "src/lib/security/tokenCrypto.ts",
   "src/lib/drive/driveApi.ts",
   "src/lib/drive/driveConnectionQueries.ts",
@@ -167,6 +168,30 @@ function assertNoDriveWriteScopesOrImportLogic() {
   }
 }
 
+function assertNoPhotoImportWrites() {
+  const files = [...googleServerFiles, ...queryFiles];
+  const offenders = [];
+
+  for (const file of files) {
+    const lines = read(file).split("\n");
+
+    lines.forEach((line, index) => {
+      if (!line.includes('.from("photos")') && !line.includes('.from("import_jobs")')) return;
+
+      const block = lines.slice(index, index + 12).join("\n");
+      const writesImportData = block.includes(".insert(") || block.includes(".upsert(");
+
+      if (writesImportData) {
+        offenders.push(`${file}:${index + 1}`);
+      }
+    });
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(`Photo import writes are out of scope for this task: ${offenders.join(", ")}`);
+  }
+}
+
 function assertFamilyScopedQueries() {
   const offenders = [];
 
@@ -195,6 +220,7 @@ assertNoClientSupabaseImports();
 assertNoClientGoogleSecretUsage();
 assertNoRawTokenLoggingOrPlaceholders();
 assertNoDriveWriteScopesOrImportLogic();
+assertNoPhotoImportWrites();
 assertFamilyScopedQueries();
 
 console.log("Query layer validation passed.");

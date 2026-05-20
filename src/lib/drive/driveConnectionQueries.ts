@@ -1,15 +1,34 @@
 import "server-only";
 
+import { GoogleTokenRefreshError, refreshGoogleAccessToken } from "@/lib/google/tokenRefresh";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { decryptToken, encryptToken } from "@/lib/security/tokenCrypto";
 import type { DriveConnectionRow } from "@/types/database";
 
 import type { GoogleTokenResponse } from "../google/googleTypes";
 
+const ACCESS_TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000;
+
+export class DriveReconnectRequiredError extends Error {
+  constructor(message = "Google Drive must be reconnected.") {
+    super(message);
+    this.name = "DriveReconnectRequiredError";
+  }
+}
+
 function getTokenExpiresAt(tokenResponse: GoogleTokenResponse) {
   if (!tokenResponse.expires_in) return null;
 
   return new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString();
+}
+
+function isAccessTokenStillValid(tokenExpiresAt: string | null) {
+  if (!tokenExpiresAt) return false;
+
+  const expiresAt = Date.parse(tokenExpiresAt);
+  if (Number.isNaN(expiresAt)) return false;
+
+  return expiresAt - ACCESS_TOKEN_EXPIRY_BUFFER_MS > Date.now();
 }
 
 export async function getDriveConnection(familyId: string): Promise<DriveConnectionRow | null> {
@@ -94,4 +113,63 @@ export async function getDecryptedDriveTokens(familyId: string) {
     refreshToken: connection.refresh_token_encrypted ? decryptToken(connection.refresh_token_encrypted) : null,
     tokenExpiresAt: connection.token_expires_at
   };
+}
+
+export async function getValidDriveAccessToken(familyId: string) {
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const connection = await getDriveConnection(familyId);
+
+  if (!connection || connection.status !== "active" || !connection.access_token_encrypted) {
+    return null;
+  }
+
+  const accessToken = decryptToken(connection.access_token_encrypted);
+  if (isAccessTokenStillValid(connection.token_expires_at)) {
+    return accessToken;
+  }
+
+  if (!connection.refresh_token_encrypted) {
+    throw new DriveReconnectRequiredError("Google Drive refresh token is missing.");
+  }
+
+  const refreshToken = decryptToken(connection.refresh_token_encrypted);
+  let refreshedToken: GoogleTokenResponse;
+
+  try {
+    refreshedToken = await refreshGoogleAccessToken(refreshToken);
+  } catch (error) {
+    if (error instanceof GoogleTokenRefreshError) {
+      throw new DriveReconnectRequiredError("Google Drive refresh token could not refresh access.");
+    }
+
+    throw error;
+  }
+
+  if (!refreshedToken.access_token) {
+    throw new DriveReconnectRequiredError("Google did not return a refreshed access token.");
+  }
+
+  const refreshedFields = {
+    access_token_encrypted: encryptToken(refreshedToken.access_token),
+    refresh_token_encrypted: refreshedToken.refresh_token
+      ? encryptToken(refreshedToken.refresh_token)
+      : connection.refresh_token_encrypted,
+    token_expires_at: getTokenExpiresAt(refreshedToken),
+    status: "active" as const
+  };
+
+  const { error } = await supabase
+    .from("drive_connections")
+    .update(refreshedFields)
+    .eq("family_id", familyId)
+    .eq("id", connection.id);
+
+  if (error) throw error;
+
+  return refreshedToken.access_token;
 }

@@ -51,6 +51,8 @@ TOKEN_ENCRYPTION_KEY=<generated value>
 
 Never commit `.env.local`, and never use `NEXT_PUBLIC_` for this key.
 
+Drive access tokens expire. When an encrypted refresh token is available, the app refreshes access tokens server-side and stores the refreshed access token encrypted before retrying Drive preview/import work. If the refresh token is missing or invalid, reconnect Google Drive from `/admin/import`.
+
 ## Product Rules
 
 - This is not a storage service.
