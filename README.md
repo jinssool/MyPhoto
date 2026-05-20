@@ -9,8 +9,8 @@ An image-centered family photo memory album web app scaffold. Google Drive remai
 - Shared layout and parent-friendly navigation.
 - Mock photo data and image-centered home photo cards.
 - Server-only Supabase metadata query helpers with mock fallback.
-- Google Drive read-only OAuth and folder metadata preview.
-- No Drive import, Drive mutation, face recognition, comments, payments, invitations, or complex permissions yet.
+- Google Drive read-only OAuth, folder metadata preview, and metadata-only album import.
+- No Drive mutation, original-file import, face recognition, comments, payments, invitations, or complex permissions yet.
 
 ## Local Drive Folder Preview
 
@@ -23,6 +23,15 @@ http://localhost:3000/api/google/drive/folders/preview?folderId=<google-drive-fo
 You can copy the folder ID from a Drive URL such as `https://drive.google.com/drive/folders/<google-drive-folder-id>`. The preview endpoint also accepts the full folder URL in the `folderId` query parameter.
 
 This endpoint lists image metadata only. It does not insert photo rows, create import jobs, download originals, or modify Google Drive files.
+
+To register that metadata in the local album database, post the same folder ID to the import endpoint:
+
+```bash
+curl -X POST http://localhost:3000/api/google/drive/folders/import \
+  -F "folderId=<google-drive-folder-id>"
+```
+
+The import endpoint creates an `import_jobs` row and upserts `photos` metadata only. It does not download original files, store image blobs, or modify Google Drive files.
 
 ## Commands
 

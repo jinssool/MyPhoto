@@ -9,7 +9,8 @@ const queryFiles = [
   "src/lib/people/personQueries.ts",
   "src/lib/events/eventQueries.ts",
   "src/lib/cleanup/cleanupQueries.ts",
-  "src/lib/drive/driveConnectionQueries.ts"
+  "src/lib/drive/driveConnectionQueries.ts",
+  "src/lib/import/driveImportJob.ts"
 ];
 
 const forbiddenSecretPatterns = [/SERVICE_ROLE/i, /service_role/i, /SUPABASE_SERVICE/i];
@@ -21,12 +22,16 @@ const googleServerFiles = [
   "src/lib/security/tokenCrypto.ts",
   "src/lib/drive/driveApi.ts",
   "src/lib/drive/driveConnectionQueries.ts",
+  "src/lib/import/driveImportTypes.ts",
+  "src/lib/import/driveImportJob.ts",
   "src/app/api/google/drive/oauth/start/route.ts",
   "src/app/api/google/drive/oauth/callback/route.ts",
   "src/app/api/google/drive/folders/preview/route.ts",
+  "src/app/api/google/drive/folders/import/route.ts",
   "src/app/admin/import/page.tsx"
 ];
 const approvedDriveReadFiles = new Set(["src/lib/drive/driveApi.ts"]);
+const approvedImportWriteFiles = new Set(["src/lib/import/driveImportJob.ts"]);
 const clientDirectories = ["src/app", "src/components"];
 
 function read(path) {
@@ -181,7 +186,7 @@ function assertNoPhotoImportWrites() {
       const block = lines.slice(index, index + 12).join("\n");
       const writesImportData = block.includes(".insert(") || block.includes(".upsert(");
 
-      if (writesImportData) {
+      if (writesImportData && !approvedImportWriteFiles.has(file)) {
         offenders.push(`${file}:${index + 1}`);
       }
     });
@@ -196,15 +201,21 @@ function assertFamilyScopedQueries() {
   const offenders = [];
 
   for (const file of queryFiles) {
-    const lines = read(file).split("\n");
+    const source = read(file);
+    const lines = source.split("\n");
     lines.forEach((line, index) => {
       if (!line.includes(".from(")) return;
 
       const block = lines.slice(index, index + 12).join("\n");
       const hasFamilyFilter = block.includes('.eq("family_id", familyId)');
       const hasFamilyInsert = block.includes("family_id: familyId");
+      const isApprovedImportWrite =
+        approvedImportWriteFiles.has(file) &&
+        (line.includes('.from("photos")') || line.includes('.from("cleanup_candidates")') || line.includes('.from("import_jobs")')) &&
+        (block.includes(".insert(") || block.includes(".upsert(") || block.includes(".update(")) &&
+        source.includes("family_id: familyId");
 
-      if (!hasFamilyFilter && !hasFamilyInsert) {
+      if (!hasFamilyFilter && !hasFamilyInsert && !isApprovedImportWrite) {
         offenders.push(`${file}:${index + 1}`);
       }
     });

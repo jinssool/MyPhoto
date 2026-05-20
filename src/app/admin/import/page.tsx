@@ -58,7 +58,7 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <li>연결 계정: {driveConnection?.google_account_email ?? "아직 확인되지 않음"}</li>
           <li>토큰 만료 시각: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
           <li>토큰 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
-          <li>가져오기 상태: 폴더 미리보기만 가능, 앨범 저장은 아직 없음</li>
+          <li>가져오기 상태: 폴더 미리보기와 메타데이터 등록 가능, 원본 저장 없음</li>
         </ul>
       </section>
       <section className="status-panel">
@@ -73,6 +73,15 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <label htmlFor="folderId">Google Drive 폴더 ID 또는 URL</label>
           <input id="folderId" name="folderId" placeholder="예: https://drive.google.com/drive/folders/1AbC..." required />
           <button type="submit">미리보기 JSON 열기</button>
+        </form>
+      </section>
+      <section className="status-panel">
+        <h2>앨범에 등록하기</h2>
+        <p>같은 폴더 ID로 이미지 메타데이터만 앨범 DB에 등록합니다. Google Drive 원본 파일은 다운로드, 이동, 삭제하지 않습니다.</p>
+        <form action="/api/google/drive/folders/import" method="post">
+          <label htmlFor="importFolderId">Google Drive 폴더 ID 또는 URL</label>
+          <input id="importFolderId" name="folderId" placeholder="예: https://drive.google.com/drive/folders/1AbC..." required />
+          <button type="submit">메타데이터 등록하기</button>
         </form>
       </section>
     </div>
