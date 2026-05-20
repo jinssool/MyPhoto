@@ -15,8 +15,24 @@ function parsePageSize(value: string | null) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function normalizeFolderId(value: string | null) {
+  const rawValue = value?.trim();
+
+  if (!rawValue) return null;
+
+  try {
+    const url = new URL(rawValue);
+    const folderMatch = url.pathname.match(/\/folders\/([^/?]+)/);
+    const idParam = url.searchParams.get("id");
+
+    return folderMatch?.[1] ?? idParam ?? rawValue;
+  } catch {
+    return rawValue;
+  }
+}
+
 export async function GET(request: NextRequest) {
-  const folderId = request.nextUrl.searchParams.get("folderId")?.trim();
+  const folderId = normalizeFolderId(request.nextUrl.searchParams.get("folderId"));
   const pageToken = request.nextUrl.searchParams.get("pageToken");
   const pageSize = parsePageSize(request.nextUrl.searchParams.get("pageSize"));
 
@@ -49,6 +65,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     if (error instanceof DriveApiError && (error.status === 401 || error.status === 403)) {
       return jsonError(401, "drive_tokens_invalid", "Google Drive access is unavailable. Reconnect Google Drive.");
+    }
+
+    if (error instanceof DriveApiError && (error.status === 400 || error.status === 404)) {
+      return jsonError(404, "invalid_or_inaccessible_folder", "Google Drive folder was not found or is not accessible to the connected account.");
     }
 
     if (!(error instanceof DriveApiError)) {

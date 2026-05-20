@@ -20,6 +20,8 @@ After configuring Supabase, Google OAuth, and `TOKEN_ENCRYPTION_KEY` in `.env.lo
 http://localhost:3000/api/google/drive/folders/preview?folderId=<google-drive-folder-id>
 ```
 
+You can copy the folder ID from a Drive URL such as `https://drive.google.com/drive/folders/<google-drive-folder-id>`. The preview endpoint also accepts the full folder URL in the `folderId` query parameter.
+
 This endpoint lists image metadata only. It does not insert photo rows, create import jobs, download originals, or modify Google Drive files.
 
 ## Commands

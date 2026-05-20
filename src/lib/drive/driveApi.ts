@@ -63,8 +63,8 @@ type DriveFilesResponse = {
 export class DriveApiError extends Error {
   status: number;
 
-  constructor(status: number) {
-    super(`Google Drive folder preview failed with status ${status}`);
+  constructor(status: number, message?: string) {
+    super(message ?? `Google Drive folder preview failed with status ${status}`);
     this.name = "DriveApiError";
     this.status = status;
   }
@@ -169,7 +169,7 @@ export async function listDriveImageFiles({
   const body = (await response.json()) as DriveFilesResponse;
 
   if (!response.ok) {
-    throw new DriveApiError(response.status);
+    throw new DriveApiError(response.status, body.error?.message);
   }
 
   return {

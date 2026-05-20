@@ -68,10 +68,10 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
       </section>
       <section className="status-panel">
         <h2>폴더 이미지 미리보기</h2>
-        <p>Google Drive 폴더 ID를 넣으면 이미지 파일 메타데이터만 JSON으로 확인합니다. 원본 파일 다운로드, 이동, 삭제, 앨범 저장은 하지 않습니다.</p>
+        <p>Google Drive 폴더 URL에서 /folders/ 뒤의 값을 복사하거나 폴더 URL 전체를 넣으면 이미지 파일 메타데이터만 JSON으로 확인합니다. 원본 파일 다운로드, 이동, 삭제, 앨범 저장은 하지 않습니다.</p>
         <form action="/api/google/drive/folders/preview" method="get">
-          <label htmlFor="folderId">Google Drive 폴더 ID</label>
-          <input id="folderId" name="folderId" placeholder="예: 1AbC..." required />
+          <label htmlFor="folderId">Google Drive 폴더 ID 또는 URL</label>
+          <input id="folderId" name="folderId" placeholder="예: https://drive.google.com/drive/folders/1AbC..." required />
           <button type="submit">미리보기 JSON 열기</button>
         </form>
       </section>
