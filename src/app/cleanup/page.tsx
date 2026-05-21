@@ -1,6 +1,7 @@
 import { PhotoCard } from "@/components/PhotoCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { cleanupReasonLabels } from "@/data/mockPhotos";
+import { updateCleanupCandidateStatusAction } from "@/app/actions/photoActions";
 import { getCleanupCandidates } from "@/lib/cleanup/cleanupQueries";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import type { CleanupReason } from "@/types/photo";
@@ -57,16 +58,24 @@ export default async function CleanupPage() {
                     ))}
                   </div>
                   <div className="cleanup-card__actions">
-                    <button type="button">포함</button>
-                    <button type="button" className="secondary-button">
-                      숨김
-                    </button>
-                    <button type="button" className="secondary-button">
-                      제외
-                    </button>
-                    <button type="button" className="secondary-button">
-                      나중에 보기
-                    </button>
+                    <form action={updateCleanupCandidateStatusAction.bind(null, photo.id, reason, "kept")}>
+                      <button type="submit">앨범에 두기</button>
+                    </form>
+                    <form action={updateCleanupCandidateStatusAction.bind(null, photo.id, reason, "hidden")}>
+                      <button type="submit" className="secondary-button">
+                        숨기기
+                      </button>
+                    </form>
+                    <form action={updateCleanupCandidateStatusAction.bind(null, photo.id, reason, "excluded")}>
+                      <button type="submit" className="secondary-button">
+                        제외하기
+                      </button>
+                    </form>
+                    <form action={updateCleanupCandidateStatusAction.bind(null, photo.id, reason, "review_later")}>
+                      <button type="submit" className="secondary-button">
+                        나중에 보기
+                      </button>
+                    </form>
                   </div>
                 </div>
               ))}

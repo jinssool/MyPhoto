@@ -540,6 +540,11 @@ button:hover {
   padding-top: 16px;
 }
 
+.detail-actions form,
+.cleanup-card__actions form {
+  display: contents;
+}
+
 .detail-review-list {
   display: flex;
   flex-wrap: wrap;
@@ -620,6 +625,7 @@ button:hover {
 }
 
 .cleanup-card__actions button {
+  width: 100%;
   padding: 0 10px;
 }
 

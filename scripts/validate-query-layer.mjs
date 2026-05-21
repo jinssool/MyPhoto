@@ -12,6 +12,7 @@ const queryFiles = [
   "src/lib/drive/driveConnectionQueries.ts",
   "src/lib/import/driveImportJob.ts"
 ];
+const serverActionFiles = ["src/app/actions/photoActions.ts"];
 
 const forbiddenSecretPatterns = [/SERVICE_ROLE/i, /service_role/i, /SUPABASE_SERVICE/i];
 const googleServerFiles = [
@@ -58,6 +59,7 @@ function assertNoPrivilegedKeyReferences() {
     "package.json",
     "src/lib/README.md",
     ...queryFiles,
+    ...serverActionFiles,
     "src/lib/supabase/server.ts",
     "src/types/database.ts"
   ];
@@ -106,7 +108,7 @@ function assertNoClientGoogleSecretUsage() {
 }
 
 function assertNoRawTokenLoggingOrPlaceholders() {
-  const files = [...googleServerFiles, ...queryFiles];
+  const files = [...googleServerFiles, ...queryFiles, ...serverActionFiles];
   const offenders = [];
 
   for (const file of files) {
@@ -132,7 +134,7 @@ function assertNoRawTokenLoggingOrPlaceholders() {
 }
 
 function assertNoDriveWriteScopesOrImportLogic() {
-  const files = [...googleServerFiles, ...queryFiles];
+  const files = [...googleServerFiles, ...queryFiles, ...serverActionFiles];
   const forbiddenScopeFragments = [
     "https://www.googleapis.com/auth/drive\"",
     "https://www.googleapis.com/auth/drive.file",
@@ -174,7 +176,7 @@ function assertNoDriveWriteScopesOrImportLogic() {
 }
 
 function assertNoPhotoImportWrites() {
-  const files = [...googleServerFiles, ...queryFiles];
+  const files = [...googleServerFiles, ...queryFiles, ...serverActionFiles];
   const offenders = [];
 
   for (const file of files) {
@@ -194,6 +196,24 @@ function assertNoPhotoImportWrites() {
 
   if (offenders.length > 0) {
     throw new Error(`Photo import writes are out of scope for this task: ${offenders.join(", ")}`);
+  }
+}
+
+function assertNoHardDeletes() {
+  const files = [...queryFiles, ...serverActionFiles];
+  const offenders = [];
+
+  for (const file of files) {
+    const lines = read(file).split("\n");
+    lines.forEach((line, index) => {
+      if (line.includes(".delete(")) {
+        offenders.push(`${file}:${index + 1}`);
+      }
+    });
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(`Hard delete calls are out of scope for app-level photo actions: ${offenders.join(", ")}`);
   }
 }
 
@@ -232,6 +252,7 @@ assertNoClientGoogleSecretUsage();
 assertNoRawTokenLoggingOrPlaceholders();
 assertNoDriveWriteScopesOrImportLogic();
 assertNoPhotoImportWrites();
+assertNoHardDeletes();
 assertFamilyScopedQueries();
 
 console.log("Query layer validation passed.");

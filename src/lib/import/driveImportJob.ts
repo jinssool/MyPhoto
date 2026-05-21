@@ -169,9 +169,24 @@ async function upsertPhotosFromCandidates(familyId: string, folderId: string, ca
   }
 
   if (candidates.length === 0) {
-    return [];
+    return {
+      photos: [],
+      importedCount: 0,
+      skippedCount: 0
+    };
   }
 
+  const driveFileIds = candidates.map((candidate) => candidate.driveFileId);
+  const { data: existingPhotos, error: existingError } = await supabase
+    .from("photos")
+    .select("drive_file_id")
+    .eq("family_id", familyId)
+    .in("drive_file_id", driveFileIds);
+
+  if (existingError) throw existingError;
+
+  const existingDriveFileIds = new Set(existingPhotos?.map((photo) => photo.drive_file_id) ?? []);
+  const importedDriveFileIds = new Set(driveFileIds.filter((driveFileId) => !existingDriveFileIds.has(driveFileId)));
   const upserts = candidates.map((candidate) => mapImportCandidateToPhotoUpsert(candidate, familyId, folderId));
   const { data, error } = await supabase
     .from("photos")
@@ -180,7 +195,11 @@ async function upsertPhotosFromCandidates(familyId: string, folderId: string, ca
 
   if (error) throw error;
 
-  return data ?? [];
+  return {
+    photos: data ?? [],
+    importedCount: importedDriveFileIds.size,
+    skippedCount: Math.max(candidates.length - importedDriveFileIds.size, 0)
+  };
 }
 
 async function createCleanupCandidates(familyId: string, importedPhotos: Array<{ id: string; drive_file_id: string }>, candidates: ImportCandidate[]) {
@@ -233,13 +252,13 @@ export async function runDriveFolderImport({ familyId, folderId, pageSize }: Dri
       folderId,
       pageSize
     });
-    const importedPhotos = await upsertPhotosFromCandidates(familyId, folderId, preview.candidates);
-    await createCleanupCandidates(familyId, importedPhotos, preview.candidates);
+    const importResult = await upsertPhotosFromCandidates(familyId, folderId, preview.candidates);
+    await createCleanupCandidates(familyId, importResult.photos, preview.candidates);
 
     const summary = {
       totalCount: preview.candidates.length,
-      importedCount: importedPhotos.length,
-      skippedCount: Math.max(preview.candidates.length - importedPhotos.length, 0),
+      importedCount: importResult.importedCount,
+      skippedCount: importResult.skippedCount,
       failedCount: 0
     };
 
