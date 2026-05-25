@@ -77,6 +77,13 @@ export async function POST(request: NextRequest) {
       imported: true,
       storedOriginals: false,
       modifiedDriveFiles: false,
+      message: "사진 정보 등록이 끝났습니다. Google Drive 원본 파일은 변경되지 않았습니다.",
+      nextSteps: ["우리집 앨범에서 최근 사진을 확인하세요.", "시간별 보기에서 등록된 사진이 보이는지 확인하세요."],
+      links: {
+        home: "/",
+        timeline: "/timeline",
+        import: "/admin/import"
+      },
       summary
     });
   } catch (error) {
