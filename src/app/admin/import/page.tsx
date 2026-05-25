@@ -15,8 +15,8 @@ const driveStatusMessages: Record<string, string> = {
   missing_code: "Google 연결 응답에 필요한 코드가 없습니다. 다시 연결해 주세요.",
   invalid_state: "Google 연결 확인 값이 맞지 않습니다. 다시 연결해 주세요.",
   oauth_not_configured: "Google OAuth 환경변수가 아직 설정되지 않았습니다.",
-  token_encryption_not_configured: "TOKEN_ENCRYPTION_KEY가 없어 Drive 토큰을 안전하게 저장하지 못했습니다.",
-  supabase_not_configured: "Supabase 환경변수가 없어 연결 정보를 저장하지 못했습니다.",
+  token_encryption_not_configured: "Drive 연결 정보를 안전하게 저장할 암호화 키가 없습니다.",
+  supabase_not_configured: "앨범 DB 연결 정보가 없어 Drive 연결을 저장하지 못했습니다.",
   oauth_failed: "Google Drive 연결 정보를 저장하지 못했습니다. 설정을 확인한 뒤 다시 시도해 주세요."
 };
 
@@ -47,6 +47,13 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
         </section>
       ) : null}
       <section className="status-panel">
+        <h2>테스트 전에 기억할 점</h2>
+        <ul>
+          <li>원본 사진은 삭제, 이동, 수정되지 않습니다.</li>
+          <li>처음에는 테스트 폴더 5~10장으로 해보세요.</li>
+        </ul>
+      </section>
+      <section className="status-panel">
         <h2>현재 상태</h2>
         <ul>
           <li>원본 사진 보관 위치: Google Drive</li>
@@ -56,8 +63,8 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <li>앨범 DB 연결: {supabaseConfigured ? "연결됨" : "연결 없음, 샘플 화면 사용 중"}</li>
           <li>Google Drive 연결 상태: {formatConnectionStatus(driveConnection?.status)}</li>
           <li>연결 계정: {driveConnection?.google_account_email ?? "아직 확인되지 않음"}</li>
-          <li>토큰 만료 시각: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
-          <li>토큰 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
+          <li>연결 유지 기한: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
+          <li>연결 정보 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
           <li>사진 가져오기 방식: 미리보기 후 메타데이터만 등록, 원본 저장 없음</li>
         </ul>
       </section>
