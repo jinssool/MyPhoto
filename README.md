@@ -173,6 +173,7 @@ Run the standard gates before handing off changes:
 
 ```bash
 npm run validate:query-layer
+npm run validate:deployment
 npm run typecheck
 npm run build
 npm audit --audit-level=moderate
@@ -211,3 +212,5 @@ Useful smoke routes:
 - No production backup, monitoring, or analytics workflow.
 
 See [docs/MVP_CHECKLIST.md](docs/MVP_CHECKLIST.md) and [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md) for the v0.1 handoff checklist and roadmap.
+
+For remote private family testing, see [docs/REMOTE_DEPLOYMENT_GUIDE.md](docs/REMOTE_DEPLOYMENT_GUIDE.md).

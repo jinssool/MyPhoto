@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "typecheck": "tsc --noEmit",
+    "validate:deployment": "node scripts/validate-deployment-readiness.mjs",
     "validate:query-layer": "node scripts/validate-query-layer.mjs"
   },
   "dependencies": {
