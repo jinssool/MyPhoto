@@ -378,10 +378,42 @@ button:hover {
 .place-row p,
 .event-section p,
 .status-panel p,
-.empty-state {
+.empty-state,
+.empty-panel p {
   margin: 8px 0 0;
   color: var(--muted);
   line-height: 1.5;
+}
+
+.empty-panel {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: clamp(22px, 4vw, 34px);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.empty-panel--compact {
+  padding: 20px;
+}
+
+.empty-panel h1,
+.empty-panel h2,
+.empty-panel h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.empty-panel h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+}
+
+.empty-panel h2 {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.empty-panel h3 {
+  font-size: 1.2rem;
 }
 
 .photo-card__meta,
@@ -586,6 +618,13 @@ button:hover {
   font-weight: 800;
 }
 
+.quiet-note a {
+  color: var(--accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .quiet-note {
   font-size: 0.95rem;
 }
@@ -739,6 +778,24 @@ button:hover {
 
 .status-panel form button {
   width: fit-content;
+}
+
+.status-panel > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  width: fit-content;
+  border-radius: 8px;
+  margin-top: 16px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--accent);
+  font-weight: 800;
+}
+
+.status-panel > a:hover {
+  background: var(--accent-strong);
 }
 
 @media (max-width: 860px) {

@@ -29,7 +29,7 @@ export default async function CleanupPage() {
       <SectionHeader
         eyebrow={`${candidateCount}장`}
         title="정리함"
-        description="나중에 확인하면 좋은 샘플 후보입니다. 이 화면은 Google Drive 원본을 삭제, 이동, 이름 변경하지 않습니다."
+        description="가족 앨범에서 한 번 확인하면 좋은 사진만 모았습니다. 여기서 눌러도 Google Drive 원본은 삭제, 이동, 이름 변경되지 않습니다."
       />
 
       <section className="memory-summary">
@@ -41,13 +41,24 @@ export default async function CleanupPage() {
         ))}
       </section>
 
+      {candidateCount === 0 ? (
+        <section className="empty-panel">
+          <h2>지금 정리할 사진이 없어요</h2>
+          <p>숨기거나 제외할 후보가 생기면 이곳에서 가볍게 확인할 수 있습니다. 원본 파일은 늘 Google Drive에 그대로 남습니다.</p>
+          <div className="hero-actions">
+            <a href="/">앨범으로 돌아가기</a>
+            <a href="/timeline">시간별로 보기</a>
+          </div>
+        </section>
+      ) : null}
+
       {cleanupOrder.map((reason) => {
         const photos = groups[reason] ?? [];
         if (photos.length === 0) return null;
 
         return (
           <section className="cleanup-section" key={reason}>
-            <SectionHeader title={cleanupReasonLabels[reason]} description={`${photos.length}장을 가족 앨범에 남길지 가볍게 확인해 보세요.`} />
+            <SectionHeader title={cleanupReasonLabels[reason]} description={`${photos.length}장을 앨범에 계속 보이게 둘지 가볍게 확인해 보세요.`} />
             <div className="photo-grid photo-grid--three">
               {photos.map((photo) => (
                 <div className="cleanup-card" key={`${reason}-${photo.id}`}>

@@ -26,6 +26,8 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
     notFound();
   }
 
+  const caption = photo.caption || "가족 앨범에 등록된 사진입니다. 원본은 Google Drive에 그대로 보관됩니다.";
+
   return (
     <article className="photo-detail">
       <div className="photo-detail__image">
@@ -42,7 +44,7 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
         </div>
         <span className="photo-card__eyebrow">{getDisplayDate(photo)}</span>
         <h1>{photo.title}</h1>
-        <p>{photo.caption}</p>
+        <p>{caption}</p>
         <dl>
           <div>
             <dt>장소</dt>
@@ -61,7 +63,7 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
             <dd>{photo.reactionCount}개</dd>
           </div>
           <div>
-            <dt>보조 정보</dt>
+            <dt>파일 이름</dt>
             <dd>{photo.filename}</dd>
           </div>
         </dl>
@@ -101,7 +103,7 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
           {previousPhoto ? <Link href={`/photos/${previousPhoto.id}`}>이전 사진: {previousPhoto.title}</Link> : <span>첫 번째 사진</span>}
           {nextPhoto ? <Link href={`/photos/${nextPhoto.id}`}>다음 사진: {nextPhoto.title}</Link> : <span>마지막 사진</span>}
         </nav>
-        <p className="quiet-note">이 작업은 앨범 안의 표시 상태만 바꾸며 Google Drive 원본 파일은 삭제, 이동, 이름 변경되지 않습니다.</p>
+        <p className="quiet-note">좋아요, 숨기기, 제외하기는 우리집 앨범 안의 표시만 바꿉니다. Google Drive 원본 파일은 삭제, 이동, 이름 변경되지 않습니다.</p>
       </div>
     </article>
   );

@@ -34,6 +34,7 @@ const googleServerFiles = [
 const approvedDriveReadFiles = new Set(["src/lib/drive/driveApi.ts"]);
 const approvedImportWriteFiles = new Set(["src/lib/import/driveImportJob.ts"]);
 const clientDirectories = ["src/app", "src/components"];
+const sourceDirectories = ["src/app", "src/components", "src/lib", "src/types"];
 
 function read(path) {
   return readFileSync(join(root, path), "utf8");
@@ -51,6 +52,10 @@ function walk(directory) {
 
     return path;
   });
+}
+
+function sourceFiles() {
+  return sourceDirectories.flatMap(walk).filter((file) => /\.(ts|tsx|js|jsx)$/.test(file));
 }
 
 function assertNoPrivilegedKeyReferences() {
@@ -130,6 +135,33 @@ function assertNoRawTokenLoggingOrPlaceholders() {
 
   if (offenders.length > 0) {
     throw new Error(`Raw token logging or placeholder storage found:\n${offenders.join("\n")}`);
+  }
+}
+
+function assertNoOriginalImageOrBlobStorage() {
+  const forbiddenPatterns = [
+    /storage\.from\s*\(/,
+    /\.upload\s*\(/,
+    /\.download\s*\(/,
+    /\.arrayBuffer\s*\(/,
+    /new\s+Blob\s*\(/,
+    /URL\.createObjectURL\s*\(/,
+    /FileReader\s*\(/,
+    /\.readAsDataURL\s*\(/
+  ];
+  const offenders = [];
+
+  for (const file of sourceFiles()) {
+    const source = read(file);
+    const hits = forbiddenPatterns.filter((pattern) => pattern.test(source)).map((pattern) => pattern.source);
+
+    if (hits.length > 0) {
+      offenders.push(`${file}: ${hits.join(", ")}`);
+    }
+  }
+
+  if (offenders.length > 0) {
+    throw new Error(`Original image/blob storage or download code found:\n${offenders.join("\n")}`);
   }
 }
 
@@ -250,6 +282,7 @@ assertNoPrivilegedKeyReferences();
 assertNoClientSupabaseImports();
 assertNoClientGoogleSecretUsage();
 assertNoRawTokenLoggingOrPlaceholders();
+assertNoOriginalImageOrBlobStorage();
 assertNoDriveWriteScopesOrImportLogic();
 assertNoPhotoImportWrites();
 assertNoHardDeletes();
