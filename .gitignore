@@ -11,6 +11,8 @@ build/
 .env*.local
 !.env.example
 .vercel/
+private-assets/
+test-assets/private-generated/
 
 supabase/.branches/
 supabase/.temp/
