@@ -803,7 +803,32 @@ export function getDisplayDate(photo: MemoryPhoto) {
     return "날짜 확인 필요";
   }
 
-  return photo.approximateDateLabel ?? photo.takenAt ?? "날짜 확인 필요";
+  if (photo.approximateDateLabel) {
+    return photo.approximateDateLabel;
+  }
+
+  if (!photo.takenAt) {
+    return "날짜 확인 필요";
+  }
+
+  const date = new Date(photo.takenAt);
+  if (Number.isNaN(date.getTime())) {
+    return photo.takenAt;
+  }
+
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+
+  if (photo.datePrecision === "year") {
+    return `${year}년`;
+  }
+
+  if (photo.datePrecision === "month") {
+    return `${year}년 ${month}월`;
+  }
+
+  return `${year}년 ${month}월 ${day}일`;
 }
 
 export function getPhotoCountLabel(count: number) {

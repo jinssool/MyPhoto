@@ -9,6 +9,7 @@ import {
   getPlaceDisplayName,
 } from "@/data/mockPhotos";
 import { addReactionAction, excludePhotoAction, hidePhotoAction, restorePhotoAction } from "@/app/actions/photoActions";
+import { SafePhotoImage } from "@/components/SafePhotoImage";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import { getPhotoDetail } from "@/lib/photos/photoQueries";
 
@@ -31,7 +32,8 @@ export default async function PhotoDetailPage({ params }: PhotoDetailPageProps) 
   return (
     <article className="photo-detail">
       <div className="photo-detail__image">
-        <img src={photo.imageUrl} alt={photo.title} />
+        <span>{photo.title}</span>
+        <SafePhotoImage src={photo.imageUrl} alt={photo.title} />
       </div>
       <div className="photo-detail__panel">
         <div className="detail-top-links">

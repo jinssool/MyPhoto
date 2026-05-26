@@ -31,6 +31,21 @@ function formatConnectionStatus(status: string | null | undefined) {
   return "연결 안 됨";
 }
 
+function formatConnectionExpiry(value: string | null | undefined) {
+  if (!value) return "아직 없음";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "확인 필요";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Seoul"
+  }).format(date);
+}
+
 async function getSafeDriveConnection() {
   try {
     return await getDriveConnection(MOCK_FAMILY_ID);
@@ -84,9 +99,9 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <li>앨범 DB 연결: {supabaseConfigured ? "연결됨" : "연결 없음, 샘플 화면 사용 중"}</li>
           <li>Google Drive 연결 상태: {formatConnectionStatus(driveConnection?.status)}</li>
           <li>연결 계정: {driveConnection?.google_account_email ?? "아직 확인되지 않음"}</li>
-          <li>연결 유지 기한: {driveConnection?.token_expires_at ?? "아직 없음"}</li>
+          <li>연결 유지 기한: {formatConnectionExpiry(driveConnection?.token_expires_at)}</li>
           <li>연결 정보 저장 방식: 서버에서 암호화 후 저장, 화면에는 표시하지 않음</li>
-          <li>사진 가져오기 방식: 미리보기 후 메타데이터만 등록, 원본 저장 없음</li>
+          <li>사진 가져오기 방식: 미리보기 후 사진 정보만 등록, 원본 저장 없음</li>
         </ul>
       </section>
       <section className="status-panel">
@@ -102,17 +117,17 @@ export default async function ImportPage({ searchParams }: ImportPageProps) {
           <input id="folderId" name="folderId" placeholder="예: https://drive.google.com/drive/folders/1AbC..." required />
           <button type="submit">폴더 미리보기</button>
         </form>
-        <p className="quiet-note">결과는 JSON으로 열립니다. 확인이 끝나면 브라우저의 뒤로 가기로 돌아와 등록을 진행하면 됩니다.</p>
+        <p className="quiet-note">미리보기 결과 화면이 열립니다. 확인이 끝나면 브라우저의 뒤로 가기로 돌아와 등록을 진행하면 됩니다.</p>
       </section>
       <section className="status-panel">
         <h2>3. 앨범에 등록하기</h2>
-        <p>미리본 폴더가 맞다면 사진 메타데이터만 앨범에 등록합니다. Google Drive 원본 파일은 다운로드, 이동, 삭제하지 않습니다.</p>
+        <p>미리본 폴더가 맞다면 사진 정보만 앨범에 등록합니다. Google Drive 원본 파일은 다운로드, 이동, 삭제하지 않습니다.</p>
         <form action="/api/google/drive/folders/import" method="post">
           <label htmlFor="importFolderId">등록할 Google Drive 폴더 ID 또는 URL</label>
           <input id="importFolderId" name="folderId" placeholder="예: https://drive.google.com/drive/folders/1AbC..." required />
           <button type="submit">앨범에 사진 정보 등록</button>
         </form>
-        <p className="quiet-note">등록 결과도 JSON으로 열립니다. 성공하면 <a href="/">우리집 앨범</a> 또는 <a href="/timeline">시간별 보기</a>에서 사진을 확인하세요.</p>
+        <p className="quiet-note">등록 결과 화면이 열립니다. 성공하면 <a href="/">우리집 앨범</a> 또는 <a href="/timeline">시간별 보기</a>에서 사진을 확인하세요.</p>
       </section>
     </div>
   );

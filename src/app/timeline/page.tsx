@@ -44,11 +44,14 @@ export default async function TimelinePage() {
                   </div>
                   <PhotoCard photo={cover} size="large" showCaption />
                   {rest.length > 0 ? (
-                    <div className="mini-photo-grid">
-                      {rest.slice(0, 5).map((photo) => (
-                        <PhotoCard key={photo.id} photo={photo} size="compact" />
-                      ))}
-                    </div>
+                    <>
+                      <p className="timeline-month__note">이 달의 나머지 사진 {rest.length}장도 함께 볼 수 있어요.</p>
+                      <div className="mini-photo-grid">
+                        {rest.map((photo) => (
+                          <PhotoCard key={photo.id} photo={photo} size="compact" />
+                        ))}
+                      </div>
+                    </>
                   ) : null}
                 </article>
               );

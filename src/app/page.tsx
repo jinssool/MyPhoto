@@ -61,11 +61,16 @@ export default async function HomePage() {
           description="파일 목록보다 사진이 먼저 보이도록, 최근 사진을 크게 모아 보여줍니다."
         />
         {recentPhotos.length > 0 ? (
-          <div className="photo-grid">
-            {recentPhotos.map((photo) => (
-              <PhotoCard key={photo.id} photo={photo} showCaption />
-            ))}
-          </div>
+          <>
+            <div className="photo-grid">
+              {recentPhotos.map((photo) => (
+                <PhotoCard key={photo.id} photo={photo} showCaption />
+              ))}
+            </div>
+            <div className="section-footer-link">
+              <a href="/timeline">전체 사진은 시간별로 보기</a>
+            </div>
+          </>
         ) : (
           <div className="empty-panel empty-panel--compact">
             <h3>최근 사진이 아직 없어요</h3>

@@ -232,6 +232,24 @@ button:hover {
   background: var(--warm);
 }
 
+.section-footer-link {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.section-footer-link a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--accent-strong);
+  background: #ffffff;
+  font-weight: 800;
+}
+
 .memory-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -314,16 +332,61 @@ button:hover {
 
 .photo-card {
   display: grid;
+  grid-template-rows: auto 1fr;
   min-height: 100%;
+  color: inherit;
 }
 
-.photo-card img {
-  width: 100%;
+.photo-card:focus-visible,
+.hero-actions a:focus-visible,
+.section-footer-link a:focus-visible,
+.site-nav a:focus-visible,
+.adjacent-photos a:focus-visible {
+  outline: 3px solid rgba(47, 111, 102, 0.35);
+  outline-offset: 3px;
+}
+
+.photo-card__media {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+  place-items: center;
   aspect-ratio: 4 / 3;
+  color: var(--accent-strong);
+  background:
+    linear-gradient(135deg, rgba(47, 111, 102, 0.08), rgba(184, 107, 56, 0.11)),
+    #f2ebe0;
+}
+
+.photo-card__media span,
+.photo-detail__image span {
+  max-width: min(82%, 34ch);
+  padding: 12px;
+  color: var(--accent-strong);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.photo-detail__image span {
+  color: #f7ead8;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+
+.photo-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: transparent;
+  font-size: 0;
   object-fit: cover;
 }
 
-.photo-card--large img {
+.photo-card--large .photo-card__media {
   aspect-ratio: 5 / 4;
 }
 
@@ -331,7 +394,7 @@ button:hover {
   box-shadow: none;
 }
 
-.photo-card--compact img {
+.photo-card--compact .photo-card__media {
   aspect-ratio: 1 / 1;
 }
 
@@ -341,6 +404,10 @@ button:hover {
 
 .photo-card--compact h3 {
   font-size: 0.95rem;
+}
+
+.photo-card--compact .photo-card__media span {
+  font-size: 0.72rem;
 }
 
 .photo-card--compact p,
@@ -368,8 +435,14 @@ button:hover {
 }
 
 .photo-card h3 {
+  display: -webkit-box;
   margin-top: 7px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-size: 1.12rem;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
 }
 
 .photo-card p,
@@ -383,6 +456,20 @@ button:hover {
   margin: 8px 0 0;
   color: var(--muted);
   line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.photo-card p {
+  display: -webkit-box;
+  min-height: 3em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.photo-card__eyebrow,
+.photo-card__meta {
+  overflow-wrap: anywhere;
 }
 
 .empty-panel {
@@ -458,6 +545,13 @@ button:hover {
   background: rgba(255, 255, 255, 0.62);
 }
 
+.timeline-month__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
 .timeline-year__heading,
 .timeline-month__heading {
   display: flex;
@@ -479,7 +573,7 @@ button:hover {
 
 .mini-photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
 }
 
@@ -496,22 +590,34 @@ button:hover {
 }
 
 .photo-detail__image {
+  position: sticky;
+  top: 104px;
+  display: grid;
+  min-height: min(72vh, 720px);
   overflow: hidden;
+  place-items: center;
   border-radius: 8px;
-  background: #24211e;
+  background:
+    linear-gradient(135deg, rgba(47, 111, 102, 0.2), rgba(184, 107, 56, 0.16)),
+    #24211e;
   box-shadow: var(--shadow);
 }
 
 .photo-detail__image img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  max-height: 76vh;
+  height: 100%;
+  color: transparent;
+  font-size: 0;
   object-fit: contain;
 }
 
 .photo-detail__panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 22px;
@@ -529,6 +635,7 @@ button:hover {
   font-size: clamp(2rem, 4vw, 3.25rem);
   line-height: 1.05;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .photo-detail__panel p {
@@ -559,6 +666,7 @@ button:hover {
 .photo-detail dd {
   margin: 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .button-row {
@@ -605,6 +713,7 @@ button:hover {
   color: var(--muted);
   background: #fffaf2;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .adjacent-photos a {
@@ -768,6 +877,7 @@ button:hover {
 .status-panel input {
   min-height: 48px;
   width: min(100%, 520px);
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 14px;
@@ -812,6 +922,12 @@ button:hover {
     grid-template-columns: 1fr;
   }
 
+  .photo-detail__image {
+    position: relative;
+    top: auto;
+    min-height: 360px;
+  }
+
   .browse-card,
   .event-cover {
     grid-template-columns: 1fr;
@@ -847,6 +963,18 @@ button:hover {
     font-size: 2.65rem;
   }
 
+  .photo-grid,
+  .photo-grid--three,
+  .photo-grid--four,
+  .feature-strip,
+  .timeline-months {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .photo-detail dl div {
     grid-template-columns: 1fr;
     gap: 4px;
@@ -855,5 +983,9 @@ button:hover {
   .adjacent-photos,
   .cleanup-card__actions {
     grid-template-columns: 1fr;
+  }
+
+  .section-footer-link {
+    justify-content: flex-start;
   }
 }

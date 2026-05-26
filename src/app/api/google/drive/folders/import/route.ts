@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { DriveReconnectRequiredError } from "@/lib/drive/driveConnectionQueries";
 import { DriveApiError } from "@/lib/drive/driveApi";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import { runDriveFolderImport } from "@/lib/import/driveImportJob";
+
+const IMPORT_REVALIDATION_PATHS = ["/", "/timeline", "/cleanup", "/places", "/events", "/people"] as const;
 
 function jsonError(status: number, code: string, message: string) {
   return NextResponse.json({ error: { code, message } }, { status });
@@ -73,12 +76,22 @@ export async function POST(request: NextRequest) {
       pageSize
     });
 
+    IMPORT_REVALIDATION_PATHS.forEach((path) => revalidatePath(path));
+
     return NextResponse.json({
       imported: true,
       storedOriginals: false,
       modifiedDriveFiles: false,
-      message: "사진 정보 등록이 끝났습니다. Google Drive 원본 파일은 변경되지 않았습니다.",
+      refreshedBrowsingPages: true,
+      message: "사진 정보 등록이 끝났습니다. Google Drive 원본 파일은 변경되지 않았고, 앨범 화면을 새로고침했습니다.",
       nextSteps: ["우리집 앨범에서 최근 사진을 확인하세요.", "시간별 보기에서 등록된 사진이 보이는지 확인하세요."],
+      counts: {
+        foundInFolder: summary.totalCount,
+        newlyAddedToAlbum: summary.importedCount,
+        alreadyInAlbum: summary.skippedCount,
+        failed: summary.failedCount
+      },
+      refreshedPaths: IMPORT_REVALIDATION_PATHS,
       links: {
         home: "/",
         timeline: "/timeline",

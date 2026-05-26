@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { MemoryPhoto } from "@/types/photo";
 import { getDisplayDate, getPlaceDisplayName } from "@/data/mockPhotos";
+import { SafePhotoImage } from "./SafePhotoImage";
 
 type PhotoCardProps = {
   photo: MemoryPhoto;
@@ -14,7 +15,10 @@ export function PhotoCard({ photo, size = "standard", showCaption = false }: Pho
 
   return (
     <Link className={`photo-card photo-card--${size}`} href={`/photos/${photo.id}`}>
-      <img src={photo.thumbnailUrl} alt={photo.title} loading="lazy" />
+      <div className="photo-card__media" aria-hidden="true">
+        <span>{photo.title}</span>
+        <SafePhotoImage src={photo.thumbnailUrl} alt="" loading="lazy" />
+      </div>
       <div className="photo-card__body">
         <span className="photo-card__eyebrow">{getDisplayDate(photo)}</span>
         <h3>{photo.title}</h3>
