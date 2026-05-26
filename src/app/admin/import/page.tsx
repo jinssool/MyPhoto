@@ -1,5 +1,5 @@
 import { SectionHeader } from "@/components/SectionHeader";
-import { getDriveConnection } from "@/lib/drive/driveConnectionQueries";
+import { DriveConnectionTableMissingError, getDriveConnection } from "@/lib/drive/driveConnectionQueries";
 import { MOCK_FAMILY_ID } from "@/lib/family/constants";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -14,9 +14,13 @@ const driveStatusMessages: Record<string, string> = {
   oauth_denied: "Google Drive 연결이 취소되었습니다.",
   missing_code: "Google 연결 응답에 필요한 코드가 없습니다. 다시 연결해 주세요.",
   invalid_state: "Google 연결 확인 값이 맞지 않습니다. 다시 연결해 주세요.",
-  oauth_not_configured: "Google OAuth 환경변수가 아직 설정되지 않았습니다.",
-  token_encryption_not_configured: "Drive 연결 정보를 안전하게 저장할 암호화 키가 없습니다.",
-  supabase_not_configured: "앨범 DB 연결 정보가 없어 Drive 연결을 저장하지 못했습니다.",
+  oauth_not_configured: "Google OAuth 배포 설정이 아직 준비되지 않았습니다. Redirect URI와 환경변수를 확인해 주세요.",
+  token_encryption_not_configured: "Drive 연결 정보를 암호화할 서버 키가 없어 저장하지 못했습니다.",
+  supabase_not_configured: "앨범 DB 환경변수가 없어 Drive 연결 정보를 저장하지 못했습니다.",
+  google_token_exchange_failed: "Google에서 Drive 연결 확인을 완료하지 못했습니다. 배포된 Redirect URI와 OAuth 설정을 확인해 주세요.",
+  google_token_response_invalid: "Google 연결 응답에 저장에 필요한 값이 없습니다. 다시 연결해 주세요.",
+  drive_connections_table_missing: "앨범 DB에 Drive 연결 테이블이 없어 저장하지 못했습니다. Supabase 마이그레이션을 먼저 적용해 주세요.",
+  drive_connection_save_failed: "앨범 DB에 Drive 연결 정보를 저장하지 못했습니다. Supabase 테이블과 권한 설정을 확인해 주세요.",
   oauth_failed: "Google Drive 연결 정보를 저장하지 못했습니다. 설정을 확인한 뒤 다시 시도해 주세요."
 };
 
@@ -27,9 +31,26 @@ function formatConnectionStatus(status: string | null | undefined) {
   return "연결 안 됨";
 }
 
+async function getSafeDriveConnection() {
+  try {
+    return await getDriveConnection(MOCK_FAMILY_ID);
+  } catch (error) {
+    if (error instanceof DriveConnectionTableMissingError) {
+      console.error("[admin-import]", "drive_connections_table_missing", {
+        operation: error.operation,
+        supabaseCode: error.code
+      });
+      return null;
+    }
+
+    console.error("[admin-import]", "drive_connection_status_unavailable");
+    return null;
+  }
+}
+
 export default async function ImportPage({ searchParams }: ImportPageProps) {
   const params = await searchParams;
-  const driveConnection = await getDriveConnection(MOCK_FAMILY_ID);
+  const driveConnection = await getSafeDriveConnection();
   const supabaseConfigured = isSupabaseConfigured();
   const statusMessage = params?.drive ? driveStatusMessages[params.drive] : null;
 

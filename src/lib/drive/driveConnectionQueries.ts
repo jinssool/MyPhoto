@@ -16,6 +16,35 @@ export class DriveReconnectRequiredError extends Error {
   }
 }
 
+export class DriveConnectionTableMissingError extends Error {
+  operation: string;
+  code: string | null;
+
+  constructor(operation: string, code: string | null) {
+    super("The drive_connections table is missing or unavailable.");
+    this.name = "DriveConnectionTableMissingError";
+    this.operation = operation;
+    this.code = code;
+  }
+}
+
+export class DriveConnectionSaveError extends Error {
+  operation: string;
+  code: string | null;
+
+  constructor(operation: string, code: string | null) {
+    super("Google Drive connection metadata could not be saved.");
+    this.name = "DriveConnectionSaveError";
+    this.operation = operation;
+    this.code = code;
+  }
+}
+
+type SupabaseErrorLike = {
+  code?: string;
+  message?: string;
+};
+
 function getTokenExpiresAt(tokenResponse: GoogleTokenResponse) {
   if (!tokenResponse.expires_in) return null;
 
@@ -29,6 +58,31 @@ function isAccessTokenStillValid(tokenExpiresAt: string | null) {
   if (Number.isNaN(expiresAt)) return false;
 
   return expiresAt - ACCESS_TOKEN_EXPIRY_BUFFER_MS > Date.now();
+}
+
+function getSupabaseErrorCode(error: SupabaseErrorLike) {
+  return error.code ?? null;
+}
+
+function isDriveConnectionsTableMissing(error: SupabaseErrorLike) {
+  const message = error.message?.toLowerCase() ?? "";
+
+  return (
+    error.code === "42P01" ||
+    (error.code === "PGRST205" && message.includes("drive_connections")) ||
+    message.includes('relation "drive_connections" does not exist') ||
+    message.includes("could not find the table") && message.includes("drive_connections")
+  );
+}
+
+function toDriveConnectionSaveError(error: SupabaseErrorLike, operation: string) {
+  const code = getSupabaseErrorCode(error);
+
+  if (isDriveConnectionsTableMissing(error)) {
+    return new DriveConnectionTableMissingError(operation, code);
+  }
+
+  return new DriveConnectionSaveError(operation, code);
 }
 
 export async function getDriveConnection(familyId: string): Promise<DriveConnectionRow | null> {
@@ -46,7 +100,13 @@ export async function getDriveConnection(familyId: string): Promise<DriveConnect
     .limit(1)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    if (isDriveConnectionsTableMissing(error)) {
+      throw new DriveConnectionTableMissingError("select_drive_connection", getSupabaseErrorCode(error));
+    }
+
+    throw error;
+  }
 
   return data;
 }
@@ -61,7 +121,18 @@ export async function upsertDriveConnectionFromOAuth(
     return null;
   }
 
-  const existingConnection = await getDriveConnection(familyId);
+  let existingConnection: DriveConnectionRow | null;
+
+  try {
+    existingConnection = await getDriveConnection(familyId);
+  } catch (error) {
+    if (error instanceof DriveConnectionTableMissingError) {
+      throw error;
+    }
+
+    throw new DriveConnectionSaveError("select_existing_drive_connection", null);
+  }
+
   if (!tokenResponse.access_token) {
     throw new Error("Google OAuth token response did not include an access token.");
   }
@@ -96,7 +167,12 @@ export async function upsertDriveConnectionFromOAuth(
 
   const { data, error } = await mutation;
 
-  if (error) throw error;
+  if (error) {
+    throw toDriveConnectionSaveError(
+      error,
+      existingConnection ? "update_drive_connection" : "insert_drive_connection"
+    );
+  }
 
   return data;
 }

@@ -7,6 +7,20 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
 export const GOOGLE_DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 
+export type GoogleOAuthTokenExchangeFailureReason = "request_failed" | "http_error" | "invalid_json";
+
+export class GoogleOAuthTokenExchangeError extends Error {
+  reason: GoogleOAuthTokenExchangeFailureReason;
+  status: number | null;
+
+  constructor(reason: GoogleOAuthTokenExchangeFailureReason, status: number | null = null) {
+    super("Google OAuth token exchange failed.");
+    this.name = "GoogleOAuthTokenExchangeError";
+    this.reason = reason;
+    this.status = status;
+  }
+}
+
 function parseScopes(scopeText: string | undefined) {
   return (scopeText?.trim() ? scopeText : GOOGLE_DRIVE_READONLY_SCOPE).split(/\s+/).filter(Boolean);
 }
@@ -57,23 +71,33 @@ export function buildGoogleOAuthAuthorizationUrl(config: GoogleOAuthConfig, stat
 }
 
 export async function exchangeGoogleOAuthCodeForTokens(config: GoogleOAuthConfig, code: string): Promise<GoogleTokenResponse> {
-  const response = await fetch(GOOGLE_TOKEN_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({
-      code,
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      redirect_uri: config.redirectUri,
-      grant_type: "authorization_code"
-    })
-  });
+  let response: Response;
 
-  if (!response.ok) {
-    throw new Error(`Google OAuth token exchange failed with status ${response.status}`);
+  try {
+    response = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        redirect_uri: config.redirectUri,
+        grant_type: "authorization_code"
+      })
+    });
+  } catch {
+    throw new GoogleOAuthTokenExchangeError("request_failed");
   }
 
-  return response.json() as Promise<GoogleTokenResponse>;
+  if (!response.ok) {
+    throw new GoogleOAuthTokenExchangeError("http_error", response.status);
+  }
+
+  try {
+    return (await response.json()) as GoogleTokenResponse;
+  } catch {
+    throw new GoogleOAuthTokenExchangeError("invalid_json", response.status);
+  }
 }
